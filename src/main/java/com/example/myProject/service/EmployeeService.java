@@ -4,11 +4,14 @@ import com.example.myProject.dto.EmployeeDTO;
 import com.example.myProject.entity.Employee;
 import com.example.myProject.map.EmployeeMapper;
 import com.example.myProject.repository.EmployeeRepository;
+import com.example.myProject.specifications.EmployeeSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,7 @@ public class EmployeeService {
     private EmployeeRepository empRepository;
 
     @Autowired
+    @Qualifier("employeeMapper")
     private EmployeeMapper empMapper;
 
     // создание сотрудника
@@ -36,7 +40,7 @@ public class EmployeeService {
 
     // удалить
     public void deleteEmployee(long id) {
-        if(!empRepository.findById(id).isPresent()){
+        if(!empRepository.findById(id).isEmpty()){
             throw new RuntimeException("Employee not found");
         }
         empRepository.deleteById(id);
@@ -64,8 +68,19 @@ public class EmployeeService {
 
     // читаем данные
     public Page<EmployeeDTO> getEmployees(int size, int page, String firstName, String lastName, String email, String role) {
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.asc("firstName"), Sort.Order.asc("role")));
-        return empRepository.findAllWithFilters(firstName, lastName, email, role, pageable).map(empMapper::toDTO); // преобразуем в DTO
+
+        // Строим Specification для фильтрации
+        Specification<Employee> spec = Specification.where(EmployeeSpecifications.hasFirstName(firstName))
+                .and(EmployeeSpecifications.hasLastName(lastName))
+                .and(EmployeeSpecifications.hasEmail(email))
+                .and(EmployeeSpecifications.hasRole(role));
+
+        Page<Employee> employees = empRepository.findAllWithFilters(spec, pageable);
+
+        // Преобразуем в DTO
+        return employees.map(empMapper::toDTO);
     }
 
 
