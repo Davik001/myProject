@@ -12,5 +12,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Employee findByEmail(String email); // найти по имейлу
     Employee getById(long id); // получить айди
 
-    Page<Employee> findAllWithFilters(Specification<Employee> spec, Pageable pageable);
+    Page<Employee> findAll(Specification<Employee> spec, Pageable pageable);
 }

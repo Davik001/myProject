@@ -25,7 +25,6 @@ public class EmployeeService {
     private EmployeeRepository empRepository;
 
     @Autowired
-    @Qualifier("employeeMapper")
     private EmployeeMapper empMapper;
 
     // создание сотрудника
@@ -77,7 +76,7 @@ public class EmployeeService {
                 .and(EmployeeSpecifications.hasEmail(email))
                 .and(EmployeeSpecifications.hasRole(role));
 
-        Page<Employee> employees = empRepository.findAllWithFilters(spec, pageable);
+        Page<Employee> employees = empRepository.findAll(spec, pageable);
 
         // Преобразуем в DTO
         return employees.map(empMapper::toDTO);
