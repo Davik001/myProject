@@ -1,11 +1,13 @@
 package com.example.myProject.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.processing.Pattern;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,6 +17,28 @@ import lombok.Setter;
 public class Customer {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+
+    String firstName;
+    String lastName;
+
+    @Column(unique = true)
+    String email;
+    String phone;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
+
+    // методы для синхронизации
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setCustomer(this);
+    }
+
+    public void removeOrder(Order order) {
+        orders.remove(order); // удаляем заказ
+        order.setCustomer(null); // обнуляем ссылку на клиента
+    }
 
 }
