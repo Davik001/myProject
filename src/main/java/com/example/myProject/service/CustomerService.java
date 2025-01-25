@@ -1,8 +1,11 @@
 package com.example.myProject.service;
 
 import com.example.myProject.dto.CustomerDTO;
+import com.example.myProject.dto.OrderDTO;
 import com.example.myProject.entity.Customer;
+import com.example.myProject.entity.Order;
 import com.example.myProject.map.CustomerMapper;
+import com.example.myProject.map.OrderMapper;
 import com.example.myProject.projection.DataCustomer;
 import com.example.myProject.repository.CustomerRepository;
 import com.example.myProject.specifications.CustomerSpecifications;
@@ -21,10 +24,29 @@ public class CustomerService {
     @Autowired
     CustomerMapper customerMapper;
 
+    @Autowired
+    OrderMapper orderMapper;
+
     // создать
     public CustomerDTO createCustomer(CustomerDTO customerDTO) {
+        // Преобразуем DTO клиента в сущность
         Customer customer = customerMapper.toEntity(customerDTO);
+
+        // Обрабатываем заказы, если они есть
+        if (customerDTO.getOrders() != null) {
+            for (OrderDTO orderDTO : customerDTO.getOrders()) {
+                // Преобразуем каждый OrderDTO в сущность Order
+                Order order = orderMapper.toEntity(orderDTO);
+
+                // Устанавливаем связь между клиентом и заказом
+                customer.addOrder(order);  // Метод addOrder на сущности Customer
+            }
+        }
+
+        // Сохраняем клиента и связанные заказы
         customer = customerRepository.save(customer);
+
+        // Преобразуем обратно в DTO и возвращаем
         return customerMapper.toDto(customer);
     }
 

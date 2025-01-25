@@ -1,9 +1,11 @@
 package com.example.myProject.service;
 
 import com.example.myProject.dto.OrderDTO;
+import com.example.myProject.entity.Customer;
 import com.example.myProject.entity.Order;
 import com.example.myProject.map.OrderMapper;
 import com.example.myProject.orderStatus.OrderStatus;
+import com.example.myProject.repository.CustomerRepository;
 import com.example.myProject.repository.OrderRepository;
 import com.example.myProject.specifications.OrderSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +23,22 @@ public class OrderService {
     OrderRepository repository;
 
     @Autowired
+    CustomerRepository customerRepository;
+
+    @Autowired
     OrderMapper mapper;
 
     // создаем
     public OrderDTO createOrder(OrderDTO dto) {
+        // Сначала сохраняем клиента
+        Customer customer = customerRepository.findById(dto.getCustomer().getId())
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        // Создаем заказ и привязываем к клиенту
         Order order = mapper.toEntity(dto);
+        order.setCustomer(customer);
+
+        // Сохраняем заказ
         order = repository.save(order);
         return mapper.toDTO(order);
     }
