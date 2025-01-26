@@ -29,24 +29,8 @@ public class CustomerService {
 
     // создать
     public CustomerDTO createCustomer(CustomerDTO customerDTO) {
-        // Преобразуем DTO клиента в сущность
         Customer customer = customerMapper.toEntity(customerDTO);
-
-        // Обрабатываем заказы, если они есть
-        if (customerDTO.getOrders() != null) {
-            for (OrderDTO orderDTO : customerDTO.getOrders()) {
-                // Преобразуем каждый OrderDTO в сущность Order
-                Order order = orderMapper.toEntity(orderDTO);
-
-                // Устанавливаем связь между клиентом и заказом
-                customer.addOrder(order);  // Метод addOrder на сущности Customer
-            }
-        }
-
-        // Сохраняем клиента и связанные заказы
         customer = customerRepository.save(customer);
-
-        // Преобразуем обратно в DTO и возвращаем
         return customerMapper.toDto(customer);
     }
 
