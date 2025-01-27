@@ -24,9 +24,6 @@ public class CustomerService {
     @Autowired
     CustomerMapper customerMapper;
 
-    @Autowired
-    OrderMapper orderMapper;
-
     // создать
     public CustomerDTO createCustomer(CustomerDTO customerDTO) {
         Customer customer = customerMapper.toEntity(customerDTO);
