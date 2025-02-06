@@ -1,9 +1,8 @@
 package com.example.myProject.map;
 
-import com.example.myProject.dto.EmployeeDTO;
+import com.example.myProject.dto.alldtos.EmployeeDTO;
 import com.example.myProject.entity.Employee;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {

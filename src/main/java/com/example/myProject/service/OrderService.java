@@ -1,6 +1,6 @@
 package com.example.myProject.service;
 
-import com.example.myProject.dto.OrderDTO;
+import com.example.myProject.dto.alldtos.OrderDTO;
 import com.example.myProject.entity.Customer;
 import com.example.myProject.entity.Order;
 import com.example.myProject.map.OrderMapper;

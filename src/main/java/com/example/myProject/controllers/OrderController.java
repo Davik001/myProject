@@ -1,6 +1,6 @@
 package com.example.myProject.controllers;
 
-import com.example.myProject.dto.OrderDTO;
+import com.example.myProject.dto.alldtos.OrderDTO;
 import com.example.myProject.orderStatus.OrderStatus;
 import com.example.myProject.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;

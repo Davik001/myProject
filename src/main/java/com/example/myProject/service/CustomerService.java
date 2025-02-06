@@ -1,11 +1,8 @@
 package com.example.myProject.service;
 
-import com.example.myProject.dto.CustomerDTO;
-import com.example.myProject.dto.OrderDTO;
+import com.example.myProject.dto.alldtos.CustomerDTO;
 import com.example.myProject.entity.Customer;
-import com.example.myProject.entity.Order;
 import com.example.myProject.map.CustomerMapper;
-import com.example.myProject.map.OrderMapper;
 import com.example.myProject.projection.DataCustomer;
 import com.example.myProject.repository.CustomerRepository;
 import com.example.myProject.specifications.CustomerSpecifications;
@@ -27,6 +24,8 @@ public class CustomerService {
     // создать
     public CustomerDTO createCustomer(CustomerDTO customerDTO) {
         Customer customer = customerMapper.toEntity(customerDTO);
+        Customer finalCustomer = customer;
+        customer.getOrders().forEach(order -> order.setCustomer(finalCustomer));
         customer = customerRepository.save(customer);
         return customerMapper.toDto(customer);
     }

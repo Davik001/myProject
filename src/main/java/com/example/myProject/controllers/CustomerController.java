@@ -1,6 +1,6 @@
 package com.example.myProject.controllers;
 
-import com.example.myProject.dto.CustomerDTO;
+import com.example.myProject.dto.alldtos.CustomerDTO;
 import com.example.myProject.projection.DataCustomer;
 import com.example.myProject.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;

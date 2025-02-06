@@ -1,12 +1,11 @@
 package com.example.myProject.service;
 
-import com.example.myProject.dto.EmployeeDTO;
+import com.example.myProject.dto.alldtos.EmployeeDTO;
 import com.example.myProject.entity.Employee;
 import com.example.myProject.map.EmployeeMapper;
 import com.example.myProject.repository.EmployeeRepository;
 import com.example.myProject.specifications.EmployeeSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
