@@ -94,12 +94,19 @@ public class EmployeeServiceTest {
     @Test
     void testUpdateEmployee_Success(){
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
-        when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        when(employeeMapper.toDTO(any(Employee.class))).thenAnswer(invocation -> {
-            Employee e = invocation.getArgument(0);
-            return new EmployeeDTO(e.getId(), e.getFirstName(), e.getLastName(), e.getEmail(), e.getPassword(), e.getRole());
-        });
+        Employee updatedEmployee = new Employee(1L, "Rayan", "Gosling", "gosling2025@gmail.com",
+                "drive341", "Admin");
+
+        when(employeeRepository.save(any(Employee.class))).thenReturn(updatedEmployee);
+        when(employeeMapper.toDTO(updatedEmployee)).thenReturn(new EmployeeDTO(
+                updatedEmployee.getId(),
+                updatedEmployee.getFirstName(),
+                updatedEmployee.getLastName(),
+                updatedEmployee.getEmail(),
+                updatedEmployee.getPassword(),
+                updatedEmployee.getRole()
+        ));
 
         EmployeeDTO update = new EmployeeDTO(1L, "Rayan", "Gosling", "gosling2025@gmail.com",
                 "drive341", "Admin");
@@ -111,8 +118,9 @@ public class EmployeeServiceTest {
 
         verify(employeeRepository, times(1)).findById(1L);
         verify(employeeRepository, times(1)).save(any(Employee.class));
-        verify(employeeMapper, times(1)).toDTO(any(Employee.class));
+        verify(employeeMapper, times(1)).toDTO(updatedEmployee);
     }
+
 
     @Test
     void testUpdateEmployee_NotFound(){
