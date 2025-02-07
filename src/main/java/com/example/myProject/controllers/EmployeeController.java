@@ -1,6 +1,7 @@
 package com.example.myProject.controllers;
 
 import com.example.myProject.dto.alldtos.EmployeeDTO;
+import com.example.myProject.repository.EmployeeRepository;
 import com.example.myProject.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
+    // чтение
     @GetMapping
     public Page<EmployeeDTO> getEmployees(
             @RequestParam(value = "firstName", required = false) String firstName,
@@ -24,6 +26,12 @@ public class EmployeeController {
 
         return employeeService.getEmployees(size, page, firstName, lastName, email, role);
     }
+
+    @GetMapping("/{id}")
+    public EmployeeDTO getEmployeeById(@PathVariable long id) {
+        return employeeService.getEmployeeById(id);
+    }
+
 
     // Создание нового сотрудника
     @PostMapping

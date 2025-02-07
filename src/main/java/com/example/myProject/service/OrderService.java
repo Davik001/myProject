@@ -8,6 +8,8 @@ import com.example.myProject.orderStatus.OrderStatus;
 import com.example.myProject.repository.CustomerRepository;
 import com.example.myProject.repository.OrderRepository;
 import com.example.myProject.specifications.OrderSpecifications;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

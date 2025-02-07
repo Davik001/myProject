@@ -38,7 +38,7 @@ public class EmployeeService {
 
     // удалить
     public void deleteEmployee(long id) {
-        if(!empRepository.findById(id).isEmpty()){
+        if(empRepository.findById(id).isEmpty()){
             throw new RuntimeException("Employee not found");
         }
         empRepository.deleteById(id);
@@ -79,6 +79,12 @@ public class EmployeeService {
 
         // Преобразуем в DTO
         return employees.map(empMapper::toDTO);
+    }
+
+    public EmployeeDTO getEmployeeById(long id) {
+        return empRepository.findById(id)
+                .map(empMapper::toDTO)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 
 
