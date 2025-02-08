@@ -1,6 +1,7 @@
 package com.example.myProject.dto.alldtos;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,9 +13,10 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomerDTO {
 
-    private long id;
+    private Long id;
     private String firstName;
     private String lastName;
     private String email;
@@ -22,7 +24,7 @@ public class CustomerDTO {
 
     private List<OrderDTO> orders; // инфа про заказы. Используя преобразования, геттеры/сеттеры и конструкторы
 
-    public CustomerDTO(long id, String firstName, String lastName, String email, String phone) {
+    public CustomerDTO(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

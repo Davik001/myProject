@@ -40,4 +40,17 @@ public class Order {
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     List<Product> products = new ArrayList<>();
+
+    public Order(long id, LocalDateTime orderDate, OrderStatus orderStatus, Customer customer) {
+        this.id = id;
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+        this.customer = customer;
+    }
+
+    public Order(long id, LocalDateTime orderDate, OrderStatus orderStatus) {
+        this.id = id;
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+    }
 }
