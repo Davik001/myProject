@@ -5,6 +5,7 @@ import com.example.myProject.dto.alldtos.OrderDTO;
 import com.example.myProject.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -34,12 +35,15 @@ public class OrderControllerTest {
 
     ObjectMapper objectMapper = new ObjectMapper();
 
+    @BeforeEach
+    void addModule(){
+        objectMapper.registerModule(new JavaTimeModule()); // Jackson не поддерживает преобразование типов из 8 джавы, поэтому надо добавить модуль
+    }
 
     @Test
     void testCreateOrder() throws Exception {
         OrderDTO request = new OrderDTO(null, LocalDateTime.now(), "NEW", 1L);
         OrderDTO response = new OrderDTO(1L, request.getOrderDate(), request.getOrderStatus(), request.getCustomerId());
-        objectMapper.registerModule(new JavaTimeModule()); // Jackson не поддерживает преобразование типов из 8 джавы, поэтому надо добавить модуль
 
         Mockito.when(orderService.createOrder(Mockito.any(OrderDTO.class))).thenReturn(response);
 
