@@ -11,20 +11,26 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(OrderController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class OrderControllerTest {
 
     @Autowired
@@ -33,7 +39,8 @@ public class OrderControllerTest {
     @MockitoBean
     private OrderService orderService;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    ObjectMapper objectMapper;
 
     @BeforeEach
     void addModule(){
@@ -55,5 +62,31 @@ public class OrderControllerTest {
                 .andExpect(jsonPath("$.orderStatus").value("NEW"))
                 .andExpect(jsonPath("$.customerId").value(1));
     }
+
+    @Test
+    void testGetOrder() throws Exception {
+        OrderDTO orderDTO = new OrderDTO(1L, LocalDateTime.now(), "NEW", 1L);
+
+        Mockito.when(orderService.getOrder(1L)).thenReturn(orderDTO);
+
+        mockMvc.perform(get("/order/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.orderStatus").value("NEW"));
+    }
+
+    @Test
+    void testDeleteOrder() throws Exception {
+        Mockito.doNothing().when(orderService).deleteOrder(1L);
+
+        mockMvc.perform(delete("/order/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetAllOrders() throws Exception {
+
+    }
+
 
 }
