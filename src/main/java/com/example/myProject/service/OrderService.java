@@ -1,6 +1,9 @@
 package com.example.myProject.service;
 
 import com.example.myProject.dto.alldtos.OrderDTO;
+import com.example.myProject.dto.common.OrderResponseDTO;
+import com.example.myProject.dto.create.OrderCreateDTO;
+import com.example.myProject.dto.update.OrderUpdateDTO;
 import com.example.myProject.entity.Customer;
 import com.example.myProject.entity.Order;
 import com.example.myProject.map.OrderMapper;
@@ -22,71 +25,73 @@ import java.time.LocalDateTime;
 public class OrderService {
 
     @Autowired
-    OrderRepository repository;
+    private OrderRepository repository;
 
     @Autowired
-    CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
 
     @Autowired
-    OrderMapper mapper;
+    private OrderMapper mapper;
 
-    // создаем
-    public OrderDTO createOrder(OrderDTO dto) {
-        // Сначала сохраняем клиента
-        Customer customer = customerRepository.findById(dto.getCustomer().getId())
+    // Создание заказа
+    public OrderResponseDTO createOrder(OrderCreateDTO dto) {
+        Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        // Создаем заказ и привязываем к клиенту
         Order order = mapper.toEntity(dto);
+        order.setOrderStatus(OrderStatus.valueOf(dto.getOrderStatus().toUpperCase()));
+        order.setOrderDate(LocalDateTime.now());
         order.setCustomer(customer);
 
-        // Сохраняем заказ
         order = repository.save(order);
         return mapper.toDTO(order);
     }
 
-    // удаляем
+    // Удаление заказа
     public void deleteOrder(long id) {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         repository.delete(order);
     }
 
-    // обновляем
-    public OrderDTO updateOrder(long id, OrderDTO dto) {
+    // Обновление заказа
+    public OrderResponseDTO updateOrder(long id, OrderUpdateDTO dto) {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        if (dto.getOrderStatus() != null) {
+            try {
+                order.setOrderStatus(OrderStatus.valueOf(dto.getOrderStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid order status");
+            }
+        }
 
-        try {
-            // Преобразуем строку в enum
-            OrderStatus status = OrderStatus.valueOf(dto.getOrderStatus());
-            order.setOrderStatus(status);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error in order status");
+        if (dto.getCustomerId() != null) {
+            Customer customer = customerRepository.findById(dto.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Customer not found"));
+            order.setCustomer(customer);
         }
 
         order = repository.save(order);
         return mapper.toDTO(order);
     }
 
-    // чтение
-    public OrderDTO getOrder(long id) {
+    // Получение заказа по ID
+    public OrderResponseDTO getOrder(long id) {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return mapper.toDTO(order);
     }
 
-    public Page<OrderDTO> getOrders(OrderStatus status, LocalDateTime orderDate, long customerId, int size, int page) {
+    // Получение списка заказов с фильтрацией, сортировкой и пагинацией
+    public Page<OrderResponseDTO> getOrders(OrderStatus status, LocalDateTime orderDate, Long customerId, int page, int size) {
         Specification<Order> specification = OrderSpecifications.getSpecification(orderDate, status, customerId);
-
         PageRequest pageable = PageRequest.of(page, size);
         Page<Order> ordersPage = repository.findAll(specification, pageable);
 
-        // Преобразование результатов в DTO
         return ordersPage.map(mapper::toDTO);
     }
-
-
 }
+
 

@@ -1,6 +1,9 @@
 package com.example.myProject.controllers;
 
 import com.example.myProject.dto.alldtos.OrderDTO;
+import com.example.myProject.dto.common.OrderResponseDTO;
+import com.example.myProject.dto.create.OrderCreateDTO;
+import com.example.myProject.dto.update.OrderUpdateDTO;
 import com.example.myProject.orderStatus.OrderStatus;
 import com.example.myProject.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +18,15 @@ import java.time.LocalDateTime;
 public class OrderController {
 
     @Autowired
-    OrderService orderService;
+    private OrderService orderService;
 
     @PostMapping
-    public OrderDTO createOrder(@RequestBody OrderDTO orderDTO) {
+    public OrderResponseDTO createOrder(@RequestBody OrderCreateDTO orderDTO) {
         return orderService.createOrder(orderDTO);
     }
 
     @PutMapping("/{id}")
-    public OrderDTO updateOrder(@PathVariable Long id, @RequestBody OrderDTO orderDTO) {
+    public OrderResponseDTO updateOrder(@PathVariable Long id, @RequestBody OrderUpdateDTO orderDTO) {
         return orderService.updateOrder(id, orderDTO);
     }
 
@@ -33,22 +36,20 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public OrderDTO getOrder(@PathVariable Long id) {
+    public OrderResponseDTO getOrder(@PathVariable Long id) {
         return orderService.getOrder(id);
     }
 
     @GetMapping
-    public Page<OrderDTO> getOrders(
+    public Page<OrderResponseDTO> getOrders(
             @RequestParam(required = false) String orderStatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime orderDate,
             @RequestParam(required = false) Long customerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        // Преобразуем строку в OrderStatus (если указано)
         OrderStatus status = (orderStatus != null) ? OrderStatus.valueOf(orderStatus.toUpperCase()) : null;
-
-        // Вызываем сервис с преобразованным статусом
         return orderService.getOrders(status, orderDate, customerId, page, size);
     }
 }
+

@@ -1,7 +1,7 @@
 package com.example.myProject.service;
 
 import com.example.myProject.dto.create.ProductCreateDTO;
-import com.example.myProject.dto.read.ProductResponseDTO;
+import com.example.myProject.dto.common.ProductResponseDTO;
 import com.example.myProject.dto.update.ProductUpdateDTO;
 import com.example.myProject.entity.Product;
 import com.example.myProject.map.ProductMapper;

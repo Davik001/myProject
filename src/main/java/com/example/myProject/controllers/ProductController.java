@@ -1,7 +1,7 @@
 package com.example.myProject.controllers;
 
 import com.example.myProject.dto.create.ProductCreateDTO;
-import com.example.myProject.dto.read.ProductResponseDTO;
+import com.example.myProject.dto.common.ProductResponseDTO;
 import com.example.myProject.dto.update.ProductUpdateDTO;
 import com.example.myProject.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;

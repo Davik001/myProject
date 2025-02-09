@@ -1,6 +1,9 @@
 package com.example.myProject.service;
 
 import com.example.myProject.dto.alldtos.CustomerDTO;
+import com.example.myProject.dto.common.CustomerResponseDTO;
+import com.example.myProject.dto.create.CustomerCreateDTO;
+import com.example.myProject.dto.update.CustomerUpdateDTO;
 import com.example.myProject.entity.Customer;
 import com.example.myProject.map.CustomerMapper;
 import com.example.myProject.projection.DataCustomer;
@@ -17,52 +20,41 @@ import org.springframework.stereotype.Service;
 public class CustomerService {
 
     @Autowired
-    CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
 
     @Autowired
-    CustomerMapper customerMapper;
+    private CustomerMapper customerMapper;
 
-    // создать
-    public CustomerDTO createCustomer(CustomerDTO customerDTO) {
-        Customer customer = customerMapper.toEntity(customerDTO);
-        Customer finalCustomer = customer;
-        customer.getOrders().forEach(order -> order.setCustomer(finalCustomer));
+    public CustomerResponseDTO createCustomer(CustomerCreateDTO customerCreateDTO) {
+        Customer customer = customerMapper.toEntity(customerCreateDTO);
         customer = customerRepository.save(customer);
         return customerMapper.toDto(customer);
     }
 
-    // удалить
     public void deleteCustomer(long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
         customerRepository.delete(customer);
     }
 
-    // обновить
-    public CustomerDTO updateCustomer(long id, CustomerDTO customerDTO){
+    public CustomerResponseDTO updateCustomer(long id, CustomerUpdateDTO customerUpdateDTO) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
-        customer.setFirstName(customerDTO.getFirstName());
-        customer.setLastName(customerDTO.getLastName());
-        customer.setEmail(customerDTO.getEmail());
-        customer.setPhone(customerDTO.getPhone());
+        customerMapper.toEntity(customerUpdateDTO, customer);
         customer = customerRepository.save(customer);
         return customerMapper.toDto(customer);
     }
 
-    // чтение
-    public CustomerDTO getCustomer(long id){
+    public CustomerResponseDTO getCustomer(long id) {
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
-        return customerMapper.toDto(customer);}
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        return customerMapper.toDto(customer);
+    }
 
-    public Page<CustomerDTO> getAllCustomer(DataCustomer filter, int page, int size){
+    public Page<CustomerResponseDTO> getAllCustomers(DataCustomer filter, int page, int size) {
         Specification<Customer> specification = CustomerSpecifications.getSpecification(filter);
-
         PageRequest pageable = PageRequest.of(page, size);
-        Page<Customer> customersPage = customerRepository.findAll(specification, pageable);
-
-        // Преобразование в DTO
-        return customersPage.map(customerMapper::toDto);
+        return customerRepository.findAll(specification, pageable).map(customerMapper::toDto);
     }
 }
+

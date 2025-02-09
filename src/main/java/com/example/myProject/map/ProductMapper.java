@@ -1,7 +1,7 @@
 package com.example.myProject.map;
 
 import com.example.myProject.dto.create.ProductCreateDTO;
-import com.example.myProject.dto.read.ProductResponseDTO;
+import com.example.myProject.dto.common.ProductResponseDTO;
 import com.example.myProject.dto.update.ProductUpdateDTO;
 import com.example.myProject.entity.Product;
 import org.mapstruct.Mapper;
