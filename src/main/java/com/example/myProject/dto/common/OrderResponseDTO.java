@@ -29,4 +29,10 @@ public class OrderResponseDTO {
 
     @Schema(description = "Информация о клиенте, оформившем заказ")
     private CustomerResponseDTO customer;
+
+    public OrderResponseDTO(LocalDateTime orderDate, String orderStatus, Long customerId) {
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+        this.customerId = customerId;
+    }
 }

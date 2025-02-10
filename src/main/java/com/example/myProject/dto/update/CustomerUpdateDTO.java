@@ -29,4 +29,11 @@ public class CustomerUpdateDTO {
 
     @Schema(description = "Контактный номер телефона")
     private String phone;
+
+    public CustomerUpdateDTO(String firstName, String lastName, String email, String phone) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+    }
 }

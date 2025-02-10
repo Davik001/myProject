@@ -35,4 +35,12 @@ public class CustomerResponseDTO {
 
     @Schema(description = "Список заказов клиента")
     private List<OrderDTO> orders;
+
+    public CustomerResponseDTO(Long id, String firstName, String lastName, String email, String phone) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+    }
 }
