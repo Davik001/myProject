@@ -32,6 +32,7 @@ services:
       - DB_USER=chief
       - DB_PASSWORD=root
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_INITIALIZATION-MODE=always
 
 volumes:
   pgdata:

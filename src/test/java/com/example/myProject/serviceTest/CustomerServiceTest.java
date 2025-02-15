@@ -4,143 +4,121 @@ import com.example.myProject.dto.common.CustomerResponseDTO;
 import com.example.myProject.dto.create.CustomerCreateDTO;
 import com.example.myProject.dto.update.CustomerUpdateDTO;
 import com.example.myProject.entity.Customer;
-import com.example.myProject.map.CustomerMapper;
 import com.example.myProject.repository.CustomerRepository;
 import com.example.myProject.service.CustomerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
-import java.util.ArrayList;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@Testcontainers
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Transactional
 public class CustomerServiceTest {
 
-    @Mock
+    // Поднимаем PostgreSQL в Docker-контейнере
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:13.16"))
+            .withDatabaseName("for_testing")
+            .withUsername("for_testing")
+            .withPassword("root");
+
+    @DynamicPropertySource
+    static void configureTestDatabase(DynamicPropertyRegistry registry) {
+        postgres.start();
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
+
+    @Autowired
     private CustomerRepository customerRepository;
 
-    @Mock
-    private CustomerMapper customerMapper;
-
-    @InjectMocks
+    @Autowired
     private CustomerService customerService;
 
     private Customer customer;
-    private CustomerResponseDTO customerResponseDTO;
-    private CustomerCreateDTO customerCreateDTO;
-    private CustomerUpdateDTO customerUpdateDTO;
 
     @BeforeEach
     void setUp() {
-        customer = new Customer(1L, "John", "Doe", "john.doe@example.com", "1234567890");
-        customerResponseDTO = new CustomerResponseDTO(1L, "John", "Doe", "john.doe@example.com", "1234567890");
-        customerCreateDTO = new CustomerCreateDTO("John", "Doe", "john.doe@example.com", "1234567890");
-        customerUpdateDTO = new CustomerUpdateDTO(1L, "Jane", "Doe", "jane.doe@example.com", "0987654321");
+        customerRepository.deleteAll(); // Чистим базу перед каждым тестом
+
+        customer = new Customer(null, "John", "Doe", "john.doe@example.com", "1234567890");
+        customer = customerRepository.save(customer); // Сохраняем тестового клиента
     }
 
     @Test
     void testGetCustomer_Success() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
-        when(customerMapper.toDto(customer)).thenReturn(customerResponseDTO);
+        CustomerResponseDTO result = customerService.getCustomer(customer.getId());
 
-        CustomerResponseDTO result = customerService.getCustomer(1L);
-
-        assertNotNull(result);
-        assertEquals("John", result.getFirstName());
-        assertEquals("Doe", result.getLastName());
-
-        verify(customerRepository, times(1)).findById(1L);
-        verify(customerMapper, times(1)).toDto(customer);
+        assertThat(result).isNotNull();
+        assertThat(result.getFirstName()).isEqualTo("John");
+        assertThat(result.getLastName()).isEqualTo("Doe");
     }
 
     @Test
     void testGetCustomer_NotFound() {
-        when(customerRepository.findById(2L)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(RuntimeException.class, () -> customerService.getCustomer(2L));
-
-        assertEquals("Customer not found", exception.getMessage());
-
-        verify(customerRepository, times(1)).findById(2L);
+        Exception exception = catchThrowableOfType(() -> customerService.getCustomer(999L), RuntimeException.class);
+        assertThat(exception).hasMessage("Customer not found");
     }
 
     @Test
     void testCreateCustomer() {
-        when(customerMapper.toEntity(customerCreateDTO)).thenReturn(customer);
-        when(customerRepository.save(customer)).thenReturn(customer);
-        when(customerMapper.toDto(customer)).thenReturn(customerResponseDTO);
+        CustomerCreateDTO createDTO = new CustomerCreateDTO("Alice", "Smith", "alice@example.com", "1122334455");
+        CustomerResponseDTO result = customerService.createCustomer(createDTO);
 
-        CustomerResponseDTO result = customerService.createCustomer(customerCreateDTO);
+        assertThat(result).isNotNull();
+        assertThat(result.getFirstName()).isEqualTo("Alice");
 
-        assertNotNull(result);
-        assertEquals("John", result.getFirstName());
-
-        verify(customerMapper, times(1)).toEntity(customerCreateDTO);
-        verify(customerRepository, times(1)).save(customer);
-        verify(customerMapper, times(1)).toDto(customer);
+        Optional<Customer> savedCustomer = customerRepository.findById(result.getId());
+        assertThat(savedCustomer).isPresent();
     }
 
     @Test
     void testUpdateCustomer_Success() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
-        when(customerMapper.toEntity(customerUpdateDTO, customer)).thenReturn(customer);
-        when(customerRepository.save(customer)).thenReturn(customer);
-        when(customerMapper.toDto(customer)).thenReturn(new CustomerResponseDTO(
-                1L, "Jane", "Doe", "jane.doe@example.com", "0987654321"));
+        CustomerUpdateDTO updateDTO = new CustomerUpdateDTO(customer.getId(), "Jane", "Doe", "jane.doe@example.com", "0987654321");
+        CustomerResponseDTO result = customerService.updateCustomer(customer.getId(), updateDTO);
 
-        CustomerResponseDTO result = customerService.updateCustomer(1L, customerUpdateDTO);
+        assertThat(result.getFirstName()).isEqualTo("Jane");
+        assertThat(result.getEmail()).isEqualTo("jane.doe@example.com");
 
-        assertNotNull(result);
-        assertEquals("Jane", result.getFirstName());
-        assertEquals("Doe", result.getLastName());
-        assertEquals("jane.doe@example.com", result.getEmail());
-        assertEquals("0987654321", result.getPhone());
-
-        verify(customerRepository, times(1)).findById(1L);
-        verify(customerMapper, times(1)).toEntity(customerUpdateDTO, customer);
-        verify(customerRepository, times(1)).save(customer);
-        verify(customerMapper, times(1)).toDto(customer);
+        Optional<Customer> updatedCustomer = customerRepository.findById(customer.getId());
+        assertThat(updatedCustomer).isPresent().get().extracting(Customer::getFirstName).isEqualTo("Jane");
     }
 
     @Test
     void testUpdateCustomer_NotFound() {
-        when(customerRepository.findById(2L)).thenReturn(Optional.empty());
+        CustomerUpdateDTO updateDTO = new CustomerUpdateDTO(999L, "Jane", "Doe", "jane.doe@example.com", "0987654321");
 
-        Exception exception = assertThrows(RuntimeException.class, () -> customerService.updateCustomer(2L, customerUpdateDTO));
-
-        assertEquals("Customer not found", exception.getMessage());
-
-        verify(customerRepository, times(1)).findById(2L);
-        verify(customerRepository, never()).save(any());
+        Exception exception = catchThrowableOfType(() -> customerService.updateCustomer(999L, updateDTO), RuntimeException.class);
+        assertThat(exception).hasMessage("Customer not found");
     }
 
     @Test
     void testDeleteCustomer_Success() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
-        doNothing().when(customerRepository).delete(any(Customer.class));
+        customerService.deleteCustomer(customer.getId());
 
-        customerService.deleteCustomer(1L);
-
-        verify(customerRepository, times(1)).findById(1L);
-        verify(customerRepository, times(1)).delete(any(Customer.class));
+        Optional<Customer> deletedCustomer = customerRepository.findById(customer.getId());
+        assertThat(deletedCustomer).isEmpty();
     }
 
     @Test
     void testDeleteCustomer_NotFound() {
-        when(customerRepository.findById(2L)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(RuntimeException.class, () -> customerService.deleteCustomer(2L));
-
-        assertEquals("Customer not found", exception.getMessage());
-
-        verify(customerRepository, times(1)).findById(2L);
-        verify(customerRepository, never()).delete(any(Customer.class));
+        Exception exception = catchThrowableOfType(() -> customerService.deleteCustomer(999L), RuntimeException.class);
+        assertThat(exception).hasMessage("Customer not found");
     }
 }
