@@ -40,23 +40,38 @@ public class CustomerController {
 
     @PutMapping("/{id}")
     public CustomerResponseDTO updateCustomer(@PathVariable Long id, @RequestBody CustomerUpdateDTO customerUpdateDTO) {
-        return customerService.updateCustomer(id, customerUpdateDTO);
+        logger.info("Updating customer with ID: {}, new data: {}", id, customerUpdateDTO);
+        try {
+            return customerService.updateCustomer(id, customerUpdateDTO);
+        } catch (Exception e) {
+            logger.error("Error while updating customer with ID {}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @DeleteMapping("/{id}")
     public void deleteCustomer(@PathVariable Long id) {
-        customerService.deleteCustomer(id);
+        logger.info("Deleting customer with ID: {}", id);
+        try {
+            customerService.deleteCustomer(id);
+        } catch (Exception e) {
+            logger.error("Error while deleting customer with ID {}: {}", id, e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping("/{id}")
     public CustomerResponseDTO getCustomer(@PathVariable Long id) {
-        // Получаем клиента по ID
+        logger.debug("Fetching customer with ID: {}", id);
         CustomerResponseDTO customer = customerService.getCustomer(id);
 
         if (customer == null) {
+            logger.info("Customer with ID {} not found.", id);
             throw new ResourceNotFoundException("Customer with ID " + id + " not found.");
         }
-        return customerService.getCustomer(id);
+
+        logger.info("Customer with ID {} found.", id);
+        return customer;
     }
 
     @GetMapping
@@ -69,6 +84,8 @@ public class CustomerController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        logger.info("Fetching customers with filter: firstName={}, lastName={}, email={}, phone={}, orderStatus={}, page={}, size={}",
+                firstName, lastName, email, phone, orderStatus, page, size);
         DataCustomer filter = new DataCustomer(firstName, lastName, email, phone, orderStatus);
         return customerService.getAllCustomers(filter, page, size);
     }
