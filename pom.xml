@@ -10,6 +10,7 @@
 	<groupId>com.example</groupId>
 	<artifactId>myProject</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>myProject</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -19,6 +20,9 @@
 	<developers>
 		<developer/>
 	</developers>
+	<modules>
+		<module>untitled</module>
+	</modules>
 	<scm>
 		<connection/>
 		<developerConnection/>
@@ -123,6 +127,11 @@
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>
 
+		<!-- Кафка -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
 
 	</dependencies>
 
