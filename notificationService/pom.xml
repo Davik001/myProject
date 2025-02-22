@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>NotificationService</artifactId>
+	<artifactId>notificationService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Notification-service</name>
 	<description>Demo project for Spring Boot</description>
