@@ -1,4 +1,5 @@
 services:
+  # Главная база данных для myProject
   database:
     image: postgres:13.16
     container_name: postgres_db
@@ -17,6 +18,45 @@ services:
       timeout: 5s
       retries: 5
 
+  # БД для NotificationService
+  notification_db:
+    image: postgres:13.16
+    container_name: notification_db
+    restart: always
+    environment:
+      POSTGRES_USER: chief
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: notification_db
+    ports:
+      - '5433:5432'  # Используем другой порт, чтобы не конфликтовать с основной БД
+    volumes:
+      - notifydata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notify_user -d notification_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # БД для SubscriptionService
+  subs_db:
+    image: postgres:13.16
+    container_name: subs_db
+    restart: always
+    environment:
+      POSTGRES_USER: chief
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: subs_db
+    ports:
+      - '5434:5432'  # Еще один порт для избежания конфликтов
+    volumes:
+      - subsdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U subs_user -d subs_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Главное приложение myProject
   app:
     build: .
     container_name: spring_app
@@ -37,21 +77,70 @@ services:
       - SPRING_DATASOURCE_INITIALIZATION_MODE=always
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+  # NotificationService
+  notification_service:
+    build: ./NotificationService
+    container_name: notification_service
+    depends_on:
+      notification_db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     ports:
-      - '2181:2181'
+      - '8081:8081'  # Новый порт для NotificationService
+    environment:
+      - DB_HOST=notification_db
+      - DB_PORT=5432
+      - DB_NAME=notification_db
+      - DB_USER=chief
+      - DB_PASSWORD=root
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_INITIALIZATION_MODE=always
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 
+  # SubscriptionService
+  subscription_service:
+    build: ./SubscriptionService
+    container_name: subscription_service
+    depends_on:
+      subs_db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - '8082:8082'  # Новый порт для SubscriptionService
+    environment:
+      - DB_HOST=subs_db
+      - DB_PORT=5432
+      - DB_NAME=subs_db
+      - DB_USER=chief
+      - DB_PASSWORD=root
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_INITIALIZATION_MODE=always
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+  # Zookeeper
+  zookeeper:
+      image: confluentinc/cp-zookeeper:latest
+      container_name: zookeeper
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+      ports:
+        - '2181:2181'
+      healthcheck:
+        test: [ "CMD", "echo", "ruok", "|", "nc", "-z", "localhost", "2181" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  # Kafka
   kafka:
     image: confluentinc/cp-kafka:latest
     container_name: kafka
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy  # Ждём, пока Zookeeper будет готов
     ports:
       - '9092:9092'
     environment:
@@ -68,3 +157,5 @@ services:
 
 volumes:
   pgdata:
+  notifydata:
+  subsdata:
