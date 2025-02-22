@@ -1,9 +1,9 @@
-package com.example.Notification.service.dto.update;
+package com.example.SubscriptionService.dto.create;
 
 import lombok.Data;
 
 @Data
-public class SubscriptionUpdateDTO {
+public class SubscriptionCreateDTO {
     private Long clientId;
     private Long productId;
     private String eventType;

@@ -1,4 +1,4 @@
-package com.example.Notification.service.dto.alldtos;
+package com.example.SubscriptionService.dto.alldtos;
 
 import lombok.Data;
 

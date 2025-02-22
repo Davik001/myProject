@@ -1,4 +1,4 @@
-package com.example.Notification.service.entity;
+package com.example.SubscriptionService.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
