@@ -5,6 +5,8 @@ import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
 import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
 import com.example.SubscriptionService.service.SubscriptionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,35 +16,47 @@ import java.util.List;
 @RequestMapping("/api/subscriptions")
 public class SubscriptionController {
 
-    private final SubscriptionService service;
+    private final SubscriptionService subscriptionService;
 
-    public SubscriptionController(SubscriptionService service) {
-        this.service = service;
+    @Autowired
+    public SubscriptionController(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
     }
 
     @PostMapping
-    public ResponseEntity<SubscriptionDTO> create(@RequestBody SubscriptionCreateDTO dto) {
-        return ResponseEntity.ok(service.createSubscription(dto));
+    public ResponseEntity<SubscriptionDTO> createSubscription(@RequestBody SubscriptionCreateDTO dto) {
+        SubscriptionDTO subscription = subscriptionService.createSubscription(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(subscription);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubscriptionDTO> update(@PathVariable Long id, @RequestBody SubscriptionUpdateDTO dto) {
-        return ResponseEntity.ok(service.updateSubscription(id, dto));
+    public ResponseEntity<SubscriptionDTO> updateSubscription(
+            @PathVariable Long id, @RequestBody SubscriptionUpdateDTO dto) {
+        SubscriptionDTO subscription = subscriptionService.updateSubscription(id, dto);
+        return ResponseEntity.ok(subscription);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.deleteSubscription(id);
+    public ResponseEntity<Void> deleteSubscription(@PathVariable Long id) {
+        subscriptionService.deleteSubscription(id);
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping
+    public ResponseEntity<List<SubscriptionDTO>> getAllSubscriptions() {
+        List<SubscriptionDTO> subscriptions = subscriptionService.getAllSubscriptions();
+        return ResponseEntity.ok(subscriptions);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<SubscriptionDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getSubscriptionById(id));
+    public ResponseEntity<SubscriptionDTO> getSubscriptionById(@PathVariable Long id) {
+        SubscriptionDTO subscription = subscriptionService.getSubscriptionById(id);
+        return ResponseEntity.ok(subscription);
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<SubscriptionDTO>> getByCustomerId(@PathVariable Long customerId) {
-        return ResponseEntity.ok(service.getSubscriptionsByCustomerId(customerId));
+    public ResponseEntity<List<SubscriptionDTO>> getSubscriptionsByCustomer(@PathVariable Long customerId) {
+        List<SubscriptionDTO> subscriptions = subscriptionService.getSubscriptionsByCustomer(customerId);
+        return ResponseEntity.ok(subscriptions);
     }
 }
