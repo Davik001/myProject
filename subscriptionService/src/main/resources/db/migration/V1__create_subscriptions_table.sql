@@ -1,0 +1,7 @@
+CREATE TABLE subscriptions (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    product_id BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
+    event_type VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
