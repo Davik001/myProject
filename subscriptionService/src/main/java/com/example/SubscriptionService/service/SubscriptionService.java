@@ -8,6 +8,7 @@ import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
 import com.example.SubscriptionService.entity.Subscription;
 import com.example.SubscriptionService.map.SubscriptionMapper;
 import com.example.SubscriptionService.repository.SubscriptionRepository;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,20 +33,23 @@ public class SubscriptionService {
     // создание. Для API
     public SubscriptionDTO createSubscription(SubscriptionCreateDTO dto) {
         // Проверка в CRM
-        ResponseEntity<Void> productResponse = crmCustomer.checkProductExists(dto.getProductId());
-        if (!productResponse.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalArgumentException("Product with ID " + dto.getProductId() + " does not exist in CRM");
-        }
+        try {
+            ResponseEntity<Void> productResponse = crmCustomer.checkProductExists(dto.getProductId());
+            if (!productResponse.getStatusCode().is2xxSuccessful()) {
+                throw new IllegalArgumentException("Product with ID " + dto.getProductId() + " does not exist in CRM");
+            }
 
-        ResponseEntity<Void> customerResponse = crmCustomer.checkCustomerExists(dto.getCustomerId());
-        if (!customerResponse.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalArgumentException("Customer with ID " + dto.getCustomerId() + " does not exist in CRM");
-        }
+            ResponseEntity<Void> customerResponse = crmCustomer.checkCustomerExists(dto.getCustomerId());
+            if (!customerResponse.getStatusCode().is2xxSuccessful()) {
+                throw new IllegalArgumentException("Customer with ID " + dto.getCustomerId() + " does not exist in CRM");
+            }
 
-        // Маппинг DTO -> Entity
-        Subscription subscription = subscriptionMapper.toEntity(dto);
-        Subscription saved = subscriptionRepository.save(subscription);
-        return subscriptionMapper.toDto(saved);
+            Subscription subscription = subscriptionMapper.toEntity(dto);
+            Subscription saved = subscriptionRepository.save(subscription);
+            return subscriptionMapper.toDto(saved);
+        } catch (FeignException e) {
+            throw new RuntimeException("Ошибка при обращении к CRM-сервису: " + e.getMessage(), e);
+        }
     }
 
     // обновление
