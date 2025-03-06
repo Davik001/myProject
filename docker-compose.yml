@@ -5,17 +5,20 @@ services:
     build: .
     container_name: crm_service
     ports:
-      - '8083:8083'  # Новый порт для CRM
+      - '7090:7090'  # Новый порт для CRM
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
       - DB_HOST=database
       - DB_PORT=5432
       - DB_NAME=chief
       - DB_USER=chief
       - DB_PASSWORD=root
+      - SPRING_PROFILES_ACTIVE=subs
+      - SERVER_PORT=7090
     depends_on:
-      database:
-        condition: service_healthy
+     database:
+      condition: service_healthy
+     subs_db:
+      condition: service_healthy
 
   # Главная база данных для myProject
   database:
@@ -50,7 +53,7 @@ services:
     volumes:
       - notifydata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U notify_user -d notification_db"]
+      test: ["CMD-SHELL", "pg_isready -U chief -d notification_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -69,7 +72,7 @@ services:
     volumes:
       - subsdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U subs_user -d subs_db"]
+      test: ["CMD-SHELL", "pg_isready -U chief -d subs_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -112,7 +115,6 @@ services:
       - DB_NAME=notification_db
       - DB_USER=chief
       - DB_PASSWORD=root
-      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_INITIALIZATION_MODE=always
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 
@@ -125,6 +127,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+      crm_service:
+        condition: service_started
     ports:
       - '8082:8082'  # Новый порт для SubscriptionService
     environment:
@@ -133,10 +137,11 @@ services:
       - DB_NAME=subs_db
       - DB_USER=chief
       - DB_PASSWORD=root
-      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_INITIALIZATION_MODE=always
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_PROFILES_ACTIVE=subs
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - CRM_SERVICE_URL=http://crm_service:7090
 
   # Zookeeper
   zookeeper:
