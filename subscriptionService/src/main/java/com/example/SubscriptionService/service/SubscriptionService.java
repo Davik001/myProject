@@ -6,12 +6,14 @@ import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
 import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
 import com.example.SubscriptionService.entity.Subscription;
+import com.example.SubscriptionService.kafka.SubsKafkaProducer;
 import com.example.SubscriptionService.map.SubscriptionMapper;
 import com.example.SubscriptionService.repository.SubscriptionRepository;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,111 +24,107 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final CrmCustomer crmCustomer;
     private final SubscriptionMapper subscriptionMapper;
+    private final SubsKafkaProducer kafkaProducer;
 
     @Autowired
-    public SubscriptionService(SubscriptionRepository subscriptionRepository, CrmCustomer crmCustomer, SubscriptionMapper subscriptionMapper) {
+    public SubscriptionService(SubscriptionRepository subscriptionRepository,
+                               CrmCustomer crmCustomer,
+                               SubscriptionMapper subscriptionMapper,
+                               SubsKafkaProducer kafkaProducer) {
         this.subscriptionRepository = subscriptionRepository;
         this.crmCustomer = crmCustomer;
         this.subscriptionMapper = subscriptionMapper;
+        this.kafkaProducer = kafkaProducer;
     }
 
-    // создание. Для API
+    // Создание подписки
+    @Transactional
     public SubscriptionDTO createSubscription(SubscriptionCreateDTO dto) {
-        // Проверка в CRM
-        try {
-            ResponseEntity<Void> productResponse = crmCustomer.checkProductExists(dto.getProductId());
-            if (!productResponse.getStatusCode().is2xxSuccessful()) {
-                throw new IllegalArgumentException("Product with ID " + dto.getProductId() + " does not exist in CRM");
-            }
+        // Проверяем существование клиента и продукта в CRM
+        checkCrmEntities(dto.getCustomerId(), dto.getProductId());
 
-            ResponseEntity<Void> customerResponse = crmCustomer.checkCustomerExists(dto.getCustomerId());
-            if (!customerResponse.getStatusCode().is2xxSuccessful()) {
-                throw new IllegalArgumentException("Customer with ID " + dto.getCustomerId() + " does not exist in CRM");
-            }
-
-            Subscription subscription = subscriptionMapper.toEntity(dto);
-            Subscription saved = subscriptionRepository.save(subscription);
-            return subscriptionMapper.toDto(saved);
-        } catch (FeignException e) {
-            throw new RuntimeException("Ошибка при обращении к CRM-сервису: " + e.getMessage(), e);
-        }
+        // Создаём подписку
+        Subscription subscription = subscriptionMapper.toEntity(dto);
+        Subscription savedSubscription = subscriptionRepository.save(subscription);
+        return subscriptionMapper.toDto(savedSubscription);
     }
 
-    // обновление
+    // Обновление подписки
+    @Transactional
     public SubscriptionDTO updateSubscription(Long id, SubscriptionUpdateDTO dto) {
-        Subscription subscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+        Subscription existingSubscription = subscriptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Подписка с ID " + id + " не найдена"));
 
-        // Проверка в CRM, если обновляются productId или customerId
-        if (dto.getProductId() != null) {
-            ResponseEntity<Void> productResponse = crmCustomer.checkProductExists(dto.getProductId());
-            if (!productResponse.getStatusCode().is2xxSuccessful()) {
-                throw new IllegalArgumentException("Product with ID " + dto.getProductId() + " does not exist in CRM");
-            }
-        }
+        // Проверяем новые значения клиента и продукта, если они изменились
+        checkCrmEntities(dto.getCustomerId(), dto.getProductId());
 
-        if (dto.getCustomerId() != null) {
-            ResponseEntity<Void> customerResponse = crmCustomer.checkCustomerExists(dto.getCustomerId());
-            if (!customerResponse.getStatusCode().is2xxSuccessful()) {
-                throw new IllegalArgumentException("Customer with ID " + dto.getCustomerId() + " does not exist in CRM");
-            }
-        }
-
-        // Маппинг DTO -> Entity с обновлением существующей сущности
-        Subscription updatedSubscription = subscriptionMapper.toEntity(dto);
-        updateSubscriptionFields(subscription, updatedSubscription);
-
-        Subscription saved = subscriptionRepository.save(subscription);
-        return subscriptionMapper.toDto(saved);
-    }
-
-    private void updateSubscriptionFields(Subscription target, Subscription source) {
-        if (source.getProductId() != null) {
-            target.setProductId(source.getProductId());
-        }
-        if (source.getCustomerId() != null) {
-            target.setCustomerId(source.getCustomerId());
-        }
-        if (source.getEventType() != null) {
-            target.setEventType(source.getEventType());
-        }
+        // Обновляем поля
+        updateSubscriptionFields(existingSubscription, subscriptionMapper.toEntity(dto));
+        Subscription updatedSubscription = subscriptionRepository.save(existingSubscription);
+        return subscriptionMapper.toDto(updatedSubscription);
     }
 
     // Удаление подписки
+    @Transactional
     public void deleteSubscription(Long id) {
         Subscription subscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+                .orElseThrow(() -> new RuntimeException("Подписка с ID " + id + " не найдена"));
         subscriptionRepository.delete(subscription);
     }
 
-    // Просмотр подписок
+    // Просмотр всех подписок
     public List<SubscriptionDTO> getAllSubscriptions() {
-        return subscriptionRepository.findAll().stream()
+        return subscriptionRepository.findAll()
+                .stream()
                 .map(subscriptionMapper::toDto)
                 .collect(Collectors.toList());
     }
 
+    // Просмотр подписки по ID
     public SubscriptionDTO getSubscriptionById(Long id) {
         Subscription subscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+                .orElseThrow(() -> new RuntimeException("Подписка с ID " + id + " не найдена"));
         return subscriptionMapper.toDto(subscription);
     }
 
+    // Просмотр подписок клиента
     public List<SubscriptionDTO> getSubscriptionsByCustomer(Long customerId) {
-        return subscriptionRepository.findByCustomerId(customerId).stream()
+        return subscriptionRepository.findByCustomerId(customerId)
+                .stream()
                 .map(subscriptionMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     // Создание дефолтной подписки
+    @Transactional
     public SubscriptionDTO createDefaultSubscription(Long productId, Long customerId) {
-        SubscriptionCreateDTO dto = new SubscriptionCreateDTO();
-        dto.setProductId(productId);
-        dto.setCustomerId(customerId);
-        dto.setEventType("DEFAULT_EVENT");
+        // Проверяем существование клиента и продукта
+        checkCrmEntities(customerId, productId);
 
-        Subscription subscription = subscriptionMapper.toEntity(dto);
-        Subscription saved = subscriptionRepository.save(subscription);
-        return subscriptionMapper.toDto(saved);
+        SubscriptionCreateDTO dto = new SubscriptionCreateDTO();
+        dto.setCustomerId(customerId);
+        dto.setProductId(productId);
+        dto.setEventType("PRODUCT_PRICE_CHANGE"); // Дефолтное событие
+        return createSubscription(dto);
+    }
+
+    // Проверка клиента и продукта в CRM
+    private void checkCrmEntities(Long customerId, Long productId) {
+        ResponseEntity<Void> customerResponse = crmCustomer.checkCustomerExists(customerId);
+        if (!customerResponse.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Клиент с ID " + customerId + " не существует в CRM");
+        }
+
+        ResponseEntity<Void> productResponse = crmCustomer.checkProductExists(productId);
+        if (!productResponse.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Продукт с ID " + productId + " не существует в CRM");
+        }
+    }
+
+    // Обновление полей подписки
+    private void updateSubscriptionFields(Subscription target, Subscription source) {
+        target.setCustomerId(source.getCustomerId());
+        target.setProductId(source.getProductId());
+        target.setEventType(source.getEventType());
     }
 }
