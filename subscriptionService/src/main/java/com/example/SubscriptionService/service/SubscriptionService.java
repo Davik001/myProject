@@ -1,7 +1,7 @@
 package com.example.SubscriptionService.service;
 
 
-import com.example.SubscriptionService.CrmCustomer;
+import com.example.SubscriptionService.CrmFeignClient;
 import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
 import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
@@ -9,7 +9,6 @@ import com.example.SubscriptionService.entity.Subscription;
 import com.example.SubscriptionService.kafka.SubsKafkaProducer;
 import com.example.SubscriptionService.map.SubscriptionMapper;
 import com.example.SubscriptionService.repository.SubscriptionRepository;
-import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +25,17 @@ public class SubscriptionService {
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
 
     private final SubscriptionRepository subscriptionRepository;
-    private final CrmCustomer crmCustomer;
+    private final CrmFeignClient crmFeignClient;
     private final SubscriptionMapper subscriptionMapper;
     private final SubsKafkaProducer kafkaProducer;
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
-                               CrmCustomer crmCustomer,
+                               CrmFeignClient crmFeignClient,
                                SubscriptionMapper subscriptionMapper,
                                SubsKafkaProducer kafkaProducer) {
         this.subscriptionRepository = subscriptionRepository;
-        this.crmCustomer = crmCustomer;
+        this.crmFeignClient = crmFeignClient;
         this.subscriptionMapper = subscriptionMapper;
         this.kafkaProducer = kafkaProducer;
     }
@@ -44,27 +43,33 @@ public class SubscriptionService {
     // Создание подписки
     @Transactional
     public SubscriptionDTO createSubscription(SubscriptionCreateDTO dto) {
-        log.info("Создание подписки для customerId: {}, productId: {}", dto.getCustomerId(), dto.getProductId());
+        log.info("Запрос на создание подписки для customerId: {}, productId: {}", dto.getCustomerId(), dto.getProductId());
 
-        // Проверяем существование клиента и продукта в CRM
-        checkCrmEntities(dto.getCustomerId(), dto.getProductId());
+        try {
+            // Проверяем существование клиента и продукта в CRM
+            checkCrmEntities(dto.getCustomerId(), dto.getProductId());
 
-        // Создаём подписку
-        Subscription subscription = subscriptionMapper.toEntity(dto);
-        Subscription savedSubscription = subscriptionRepository.save(subscription);
-        SubscriptionDTO result = subscriptionMapper.toDto(savedSubscription);
+            // Создаём подписку
+            Subscription subscription = subscriptionMapper.toEntity(dto);
+            Subscription savedSubscription = subscriptionRepository.save(subscription);
+            SubscriptionDTO result = subscriptionMapper.toDto(savedSubscription);
 
-        // Отправляем задачу в Kafka для микросервиса уведомлений
-        kafkaProducer.sendNotificationTask(
-                result.getId(),
-                result.getCustomerId(),
-                result.getEventType(),
-                "Подписка создана"
-        );
+            // Отправляем задачу в Kafka для микросервиса уведомлений
+            kafkaProducer.sendNotificationTask(
+                    result.getId(),
+                    result.getCustomerId(),
+                    result.getEventType(),
+                    "Подписка создана"
+            );
 
-        log.info("Подписка успешно создана с ID: {}", result.getId());
-        return result;
+            log.info("Подписка успешно создана с ID: {}", result.getId());
+            return result;
+        } catch (Exception e) {
+            log.error("Ошибка при создании подписки для customerId: {}, productId: {}", dto.getCustomerId(), dto.getProductId(), e);
+            throw new RuntimeException("Ошибка при создании подписки", e);
+        }
     }
+
 
     // Обновление подписки
     @Transactional
@@ -150,13 +155,13 @@ public class SubscriptionService {
     private void checkCrmEntities(Long customerId, Long productId) {
         log.info("Проверка существования клиента {} и продукта {} в CRM", customerId, productId);
 
-        ResponseEntity<Void> customerResponse = crmCustomer.checkCustomerExists(customerId);
+        ResponseEntity<Void> customerResponse = crmFeignClient.checkCustomerExists(customerId);
         if (!customerResponse.getStatusCode().is2xxSuccessful()) {
             log.error("Клиент с ID {} не существует в CRM", customerId);
             throw new RuntimeException("Клиент с ID " + customerId + " не существует в CRM");
         }
 
-        ResponseEntity<Void> productResponse = crmCustomer.checkProductExists(productId);
+        ResponseEntity<Void> productResponse = crmFeignClient.checkProductExists(productId);
         if (!productResponse.getStatusCode().is2xxSuccessful()) {
             log.error("Продукт с ID {} не существует в CRM", productId);
             throw new RuntimeException("Продукт с ID " + productId + " не существует в CRM");
