@@ -9,7 +9,33 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CrmKafkaConsumer {
+    private final Logger log = LoggerFactory.getLogger(CrmKafkaConsumer.class);
+    private final ObjectMapper objectMapper;
 
-    private final Logger logger = LoggerFactory.getLogger(CrmKafkaConsumer.class);
+    @Autowired
+    public CrmKafkaConsumer(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @KafkaListener(topics = "${spring.kafka.topics.subscription-events}", groupId = "${spring.kafka.consumer.group-id}")
+    public void listenSubscriptionEvents(String message) {
+        try {
+            log.info("Получено сообщение из топика subscription-events: {}", message);
+
+            // Парсим сообщение из JSON в объект SubscriptionEvent
+            SubscriptionEvent subscriptionEvent = objectMapper.readValue(message, SubscriptionEvent.class);
+
+            // Здесь можно добавить логику обработки события
+            log.info("Получено подтверждение подписки: subscriptionId={}, customerId={}, eventType={}, details={}",
+                    subscriptionEvent.getSubscriptionId(),
+                    subscriptionEvent.getCustomerId(),
+                    subscriptionEvent.getEventType(),
+                    subscriptionEvent.getDetails());
+
+        } catch (Exception e) {
+            log.error("Ошибка при обработке сообщения из Kafka: {}", e.getMessage(), e);
+            throw new RuntimeException("Не удалось обработать событие подписки", e);
+        }
+    }
 
 }
