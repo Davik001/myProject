@@ -13,19 +13,24 @@ import java.util.Map;
 @Service
 public class KafkaConsumer {
 
-    Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
-
-    KafkaTemplate<String, String> kafkaTemplate;
-    ObjectMapper objectMapper;
+    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
+    private final KafkaTemplate<String, SubscriptionEvent> kafkaTemplate;
 
     @Autowired
-    public KafkaConsumer(ObjectMapper objectMapper, KafkaTemplate<String, String> kafkaTemplate) {
-        this.objectMapper = objectMapper;
+    public KafkaConsumer(KafkaTemplate<String, SubscriptionEvent> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     @KafkaListener(topics = "${spring.kafka.topics.subscription-events}", groupId = "${spring.kafka.consumer.group-id}")
     public void readSubscription(String message) {
-            kafkaTemplate.send("subscription-events", "Подписка создана!");
+        logger.info("Получено сообщение из Kafka: {}", message);
+
+        // Создаем корректный JSON-объект, а не просто строку
+        SubscriptionEvent event = new SubscriptionEvent();
+        event.setEventType("SUBSCRIPTION_CONFIRMED");
+        event.setDetails("Подписка успешно создана!");
+
+        kafkaTemplate.send("subscription-events", event);
+        logger.info("Отправлено сообщение обратно в Kafka: {}", event);
     }
 }
