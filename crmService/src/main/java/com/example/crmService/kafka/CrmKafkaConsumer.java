@@ -17,7 +17,7 @@ public class CrmKafkaConsumer {
         this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "${spring.kafka.topics.subscription-events}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = {"${spring.kafka.topics.subscription-events}", "subscription-request"}, groupId = "${spring.kafka.consumer.group-id}")
     public void listenSubscriptionEvents(String message) {
         try {
             log.info("Получено сообщение из топика subscription-events: {}", message);

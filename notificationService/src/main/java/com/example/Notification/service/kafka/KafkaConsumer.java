@@ -30,7 +30,7 @@ public class KafkaConsumer {
         event.setEventType("SUBSCRIPTION_CONFIRMED");
         event.setDetails("Подписка успешно создана!");
 
-        kafkaTemplate.send("subscription-events", event);
+        kafkaTemplate.send("subscription-request", event);
         logger.info("Отправлено сообщение обратно в Kafka: {}", event);
     }
 }

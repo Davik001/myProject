@@ -29,7 +29,7 @@ public class SubsKafkaConsumer {
         this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "${spring.kafka.topics.product-events}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = {"${spring.kafka.topics.product-events}", "subscription-request"}, groupId = "${spring.kafka.consumer.group-id}")
     public void listenProductEvents(String message) {
         try {
             log.info("Получено сообщение из топика product-events: {}", message);
