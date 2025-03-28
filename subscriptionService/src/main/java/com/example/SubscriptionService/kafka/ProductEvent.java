@@ -1,26 +1,17 @@
 package com.example.SubscriptionService.kafka;
 
-import lombok.Data;
+import com.example.SubscriptionService.eventEnum.EventType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductEvent {
     Long productId;
     String details;
-
-    public void setDetails(String details) {
-        this.details = details;
-    }
-    public String getDetails() {
-        return details;
-    }
-
-    public void setProductId(Long productId) {
-        this.productId = productId;
-    }
-    public Long getProductId() {
-        return productId;
-    }
+    EventType eventType;
 }

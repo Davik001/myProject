@@ -58,7 +58,7 @@ public class SubscriptionService {
             kafkaProducer.sendNotificationTask(
                     result.getId(),
                     result.getCustomerId(),
-                    result.getEventType(),
+                    result.getEventType().name(),
                     "Подписка создана"
             );
 
@@ -134,22 +134,21 @@ public class SubscriptionService {
     }
 
     // Создание дефолтной подписки
-    @Transactional
-    public SubscriptionDTO createDefaultSubscription(Long productId, Long customerId) {
-        log.info("Создание дефолтной подписки для customerId: {}, productId: {}", customerId, productId);
-
-        // Проверяем существование клиента и продукта
-        checkCrmEntities(customerId, productId);
-
-        SubscriptionCreateDTO dto = new SubscriptionCreateDTO();
-        dto.setCustomerId(customerId);
-        dto.setProductId(productId);
-        dto.setEventType("PRODUCT_PRICE_CHANGE"); // Дефолтное событие
-        SubscriptionDTO result = createSubscription(dto);
-
-        log.info("Дефолтная подписка успешно создана с ID: {}", result.getId());
-        return result;
-    }
+//    @Transactional
+//    public SubscriptionDTO createDefaultSubscription(Long productId, Long customerId) {
+//        log.info("Создание дефолтной подписки для customerId: {}, productId: {}", customerId, productId);
+//
+//        // Проверяем существование клиента и продукта
+//        checkCrmEntities(customerId, productId);
+//
+//        SubscriptionCreateDTO dto = new SubscriptionCreateDTO();
+//        dto.setCustomerId(customerId);
+//        dto.setProductId(productId);
+//        SubscriptionDTO result = createSubscription(dto);
+//
+//        log.info("Дефолтная подписка успешно создана с ID: {}", result.getId());
+//        return result;
+//    }
 
     // Проверка клиента и продукта в CRM
     private void checkCrmEntities(Long customerId, Long productId) {
@@ -174,6 +173,6 @@ public class SubscriptionService {
     private void updateSubscriptionFields(Subscription target, Subscription source) {
         target.setCustomerId(source.getCustomerId());
         target.setProductId(source.getProductId());
-        target.setEventType(source.getEventType());
+        target.setType(source.getType());
     }
 }

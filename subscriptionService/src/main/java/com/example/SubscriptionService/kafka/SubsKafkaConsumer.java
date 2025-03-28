@@ -53,11 +53,13 @@ public class SubsKafkaConsumer {
             // Обрабатываем каждую подписку
             for (SubscriptionDTO subscription : subscriptions) {
                 log.info("Обрабатывается подписка ID {} для клиента {}", subscription.getId(), subscription.getCustomerId());
+                log.info("EventType: {}", subscription.getEventType());
+
                 // Отправляем задачу в микросервис уведомлений
                 kafkaProducer.sendNotificationTask(
                         subscription.getId(),
                         subscription.getCustomerId(),
-                        subscription.getEventType(),
+                        subscription.getEventType().name(), // enum в String
                         productDetails
                 );
             }

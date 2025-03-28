@@ -27,8 +27,9 @@ public class Employee {
 
     @Column
     String password;
-    @Column
-    String role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    Role role;
 
 }

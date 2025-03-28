@@ -1,5 +1,6 @@
 package com.example.crmService.projection;
 
+import com.example.crmService.orderStatus.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,5 +1,6 @@
 package com.example.crmService.dto.create;
 
+import com.example.crmService.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,5 +27,5 @@ public class EmployeeCreateDTO {
     private String password;
 
     @Schema(description = "Роль сотрудника", example = "Admin", required = true)
-    private String role;
+    private Role role;
 }

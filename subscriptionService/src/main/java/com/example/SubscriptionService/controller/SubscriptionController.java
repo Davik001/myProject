@@ -82,13 +82,13 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptions);
     }
 
-    // Создание дефолтной подписки (для CRM)
-    @PostMapping("/default")
-    public ResponseEntity<SubscriptionDTO> createDefaultSubscription(@RequestParam Long productId,
-                                                                     @RequestParam Long customerId) {
-        logger.info("Запрос на создание дефолтной подписки для продукта с ID {} и клиента с ID {}", productId, customerId);
-        SubscriptionDTO created = subscriptionService.createDefaultSubscription(productId, customerId);
-        logger.info("Дефолтная подписка успешно создана: {}", created);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
-    }
+//    Создание дефолтной подписки (для CRM)
+//    @PostMapping("/default")
+//    public ResponseEntity<SubscriptionDTO> createDefaultSubscription(@RequestParam Long productId,
+//                                                                     @RequestParam Long customerId) {
+//        logger.info("Запрос на создание дефолтной подписки для продукта с ID {} и клиента с ID {}", productId, customerId);
+//        SubscriptionDTO created = subscriptionService.createDefaultSubscription(productId, customerId);
+//        logger.info("Дефолтная подписка успешно создана: {}", created);
+//        return new ResponseEntity<>(created, HttpStatus.CREATED);
+//    }
 }

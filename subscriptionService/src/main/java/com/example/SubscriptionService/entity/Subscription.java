@@ -1,5 +1,6 @@
 package com.example.SubscriptionService.entity;
 
+import com.example.SubscriptionService.eventEnum.EventType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,49 +27,10 @@ public class Subscription {
     @Column(name = "customer_id")
     private Long customerId;
 
-    private String eventType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false)
+    private EventType type;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Геттеры
-    public Long getId() {
-        return id;
-    }
-
-    public Long getProductId() {
-        return productId;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public String getEventType() {
-        return eventType;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    // Сеттеры
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setProductId(Long productId) {
-        this.productId = productId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }

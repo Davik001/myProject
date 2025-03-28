@@ -27,8 +27,8 @@ public class OrderResponseDTO {
     @Schema(description = "Уникальный идентификатор клиента", example = "1", required = true)
     private Long customerId;
 
-    @Schema(description = "Информация о клиенте, оформившем заказ")
-    private CustomerResponseDTO customer;
+//    @Schema(description = "Информация о клиенте, оформившем заказ")
+//    private CustomerResponseDTO customer;
 
     public OrderResponseDTO(LocalDateTime orderDate, String orderStatus, Long customerId) {
         this.orderDate = orderDate;

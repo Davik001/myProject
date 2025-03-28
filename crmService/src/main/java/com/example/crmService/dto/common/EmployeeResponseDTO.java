@@ -1,5 +1,6 @@
 package com.example.crmService.dto.common;
 
+import com.example.crmService.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,6 @@ public class EmployeeResponseDTO {
     private String email;
 
     @Schema(description = "Роль сотрудника", example = "Admin")
-    private String role;
+    private Role role;
 }
 

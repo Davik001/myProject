@@ -17,6 +17,6 @@ public interface OrderMapper {
     @Mapping(target = "customer", ignore = true)
     Order toEntity(OrderUpdateDTO dto);
 
-    @Mapping(target = "customer", ignore = true)
+   // @Mapping(target = "customer", ignore = true)
     OrderResponseDTO toDTO(Order order);
 }
