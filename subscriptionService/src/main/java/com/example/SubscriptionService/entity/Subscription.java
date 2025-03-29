@@ -29,7 +29,7 @@ public class Subscription {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
-    private EventType type;
+    private EventType eventType;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
