@@ -4,8 +4,10 @@ import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
 import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
 import com.example.SubscriptionService.entity.Subscription;
+import com.example.SubscriptionService.eventEnum.EventType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface SubscriptionMapper {
@@ -15,12 +17,13 @@ public interface SubscriptionMapper {
     // DTO -> Сущность (для создания)
     @Mapping(target = "id", ignore = true) // ID генерируется автоматически
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(source = "eventType", target = "type")
+   // @Mapping(source = "eventType", target = "type", qualifiedByName = "mapEventType")
     Subscription toEntity(SubscriptionCreateDTO dto);
 
     // DTO -> Сущность (для обновления)
     @Mapping(target = "id", ignore = true) // Не трогаем ID при обновлении
     @Mapping(target = "createdAt", ignore = true) // Не трогаем дату создания
-    @Mapping(source = "eventType", target = "type")
+   // @Mapping(source = "eventType", target = "type", qualifiedByName = "mapEventType")
     Subscription toEntity(SubscriptionUpdateDTO dto);
+
 }
