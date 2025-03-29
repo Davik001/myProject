@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum EventType {
+    CREATED("Создан"),
     UPDATE("Изменено имя."),
     DELETE("Объект удален."),
     PRICE_INCREASE("Цена поднялась!"),
