@@ -54,6 +54,8 @@ public class SubscriptionService {
             Subscription savedSubscription = subscriptionRepository.save(subscription);
             SubscriptionDTO result = subscriptionMapper.toDto(savedSubscription);
 
+            log.info("EventType в result: {}", result.getEventType());
+
             // Отправляем задачу в Kafka для микросервиса уведомлений
             kafkaProducer.sendNotificationTask(
                     result.getId(),
@@ -133,23 +135,6 @@ public class SubscriptionService {
         return subscriptions;
     }
 
-    // Создание дефолтной подписки
-//    @Transactional
-//    public SubscriptionDTO createDefaultSubscription(Long productId, Long customerId) {
-//        log.info("Создание дефолтной подписки для customerId: {}, productId: {}", customerId, productId);
-//
-//        // Проверяем существование клиента и продукта
-//        checkCrmEntities(customerId, productId);
-//
-//        SubscriptionCreateDTO dto = new SubscriptionCreateDTO();
-//        dto.setCustomerId(customerId);
-//        dto.setProductId(productId);
-//        SubscriptionDTO result = createSubscription(dto);
-//
-//        log.info("Дефолтная подписка успешно создана с ID: {}", result.getId());
-//        return result;
-//    }
-
     // Проверка клиента и продукта в CRM
     private void checkCrmEntities(Long customerId, Long productId) {
         log.info("Проверка существования клиента {} и продукта {} в CRM", customerId, productId);
@@ -173,6 +158,16 @@ public class SubscriptionService {
     private void updateSubscriptionFields(Subscription target, Subscription source) {
         target.setCustomerId(source.getCustomerId());
         target.setProductId(source.getProductId());
-        target.setType(source.getType());
+        target.setEventType(source.getEventType());
     }
+
+    // Получение подписок по productId
+    public List<SubscriptionDTO> getSubscriptionsByProductId(Long productId) {
+        log.info("Получение подписок для продукта {}", productId);
+        return subscriptionRepository.findByProductId(productId)
+                .stream()
+                .map(subscriptionMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 }
