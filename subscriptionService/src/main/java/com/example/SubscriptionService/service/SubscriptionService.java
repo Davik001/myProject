@@ -12,6 +12,7 @@ import com.example.SubscriptionService.map.SubscriptionMapper;
 import com.example.SubscriptionService.repository.SubscriptionRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SubscriptionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
@@ -31,17 +33,6 @@ public class SubscriptionService {
     private final CrmFeignClient crmFeignClient;
     private final SubscriptionMapper subscriptionMapper;
     private final SubsKafkaProducer kafkaProducer;
-
-    @Autowired
-    public SubscriptionService(SubscriptionRepository subscriptionRepository,
-                               CrmFeignClient crmFeignClient,
-                               SubscriptionMapper subscriptionMapper,
-                               SubsKafkaProducer kafkaProducer) {
-        this.subscriptionRepository = subscriptionRepository;
-        this.crmFeignClient = crmFeignClient;
-        this.subscriptionMapper = subscriptionMapper;
-        this.kafkaProducer = kafkaProducer;
-    }
 
     // Создание подписки
     @Transactional
