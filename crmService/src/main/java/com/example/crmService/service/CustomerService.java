@@ -9,6 +9,7 @@ import com.example.crmService.map.CustomerMapper;
 import com.example.crmService.projection.DataCustomer;
 import com.example.crmService.repository.CustomerRepository;
 import com.example.crmService.specifications.CustomerSpecifications;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,13 +34,13 @@ public class CustomerService {
 
     public void deleteCustomer(long id) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
         customerRepository.delete(customer);
     }
 
     public CustomerResponseDTO updateCustomer(long id, CustomerUpdateDTO customerUpdateDTO) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
         customerMapper.toEntity(customerUpdateDTO, customer);
         customer = customerRepository.save(customer);
         return customerMapper.toDto(customer);
@@ -47,7 +48,7 @@ public class CustomerService {
 
     public CustomerResponseDTO getCustomer(long id) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
         return customerMapper.toDto(customer);
     }
 

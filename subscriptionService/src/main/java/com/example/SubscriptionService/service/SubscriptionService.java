@@ -6,9 +6,12 @@ import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
 import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
 import com.example.SubscriptionService.entity.Subscription;
+import com.example.SubscriptionService.exception.CustomEntityNotFoundException;
 import com.example.SubscriptionService.kafka.SubsKafkaProducer;
 import com.example.SubscriptionService.map.SubscriptionMapper;
 import com.example.SubscriptionService.repository.SubscriptionRepository;
+import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +69,11 @@ public class SubscriptionService {
 
             log.info("Подписка успешно создана с ID: {}", result.getId());
             return result;
-        } catch (Exception e) {
-            log.error("Ошибка при создании подписки для customerId: {}, productId: {}", dto.getCustomerId(), dto.getProductId(), e);
+        } catch (CustomEntityNotFoundException e) {
+            log.error("Ошибка при запросе к CRM-сервису: {}", e.getMessage(), e);
+            throw new CustomEntityNotFoundException("Одна из сущностей не найдена", e);
+        }catch (Exception e) {
+            log.error("Ошибка при создании подписки для customerId: {}, productId: {}:", dto.getCustomerId(), dto.getProductId(), e);
             throw new RuntimeException("Ошибка при создании подписки", e);
         }
     }
@@ -79,7 +85,7 @@ public class SubscriptionService {
         log.info("Обновление подписки с ID: {}", id);
 
         Subscription existingSubscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Подписка с ID " + id + " не найдена"));
+                .orElseThrow(() -> new EntityNotFoundException("Подписка с ID " + id + " не найдена"));
 
         // Проверяем новые значения клиента и продукта, если они изменились
         checkCrmEntities(dto.getCustomerId(), dto.getProductId());
@@ -99,7 +105,7 @@ public class SubscriptionService {
         log.info("Удаление подписки с ID: {}", id);
 
         Subscription subscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Подписка с ID " + id + " не найдена"));
+                .orElseThrow(() -> new EntityNotFoundException("Подписка с ID " + id + " не найдена"));
         subscriptionRepository.delete(subscription);
 
         log.info("Подписка с ID: {} успешно удалена", id);
@@ -120,7 +126,7 @@ public class SubscriptionService {
     public SubscriptionDTO getSubscriptionById(Long id) {
         log.info("Получение подписки с ID: {}", id);
         Subscription subscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Подписка с ID " + id + " не найдена"));
+                .orElseThrow(() -> new EntityNotFoundException("Подписка с ID " + id + " не найдена"));
         return subscriptionMapper.toDto(subscription);
     }
 
@@ -136,19 +142,19 @@ public class SubscriptionService {
     }
 
     // Проверка клиента и продукта в CRM
-    private void checkCrmEntities(Long customerId, Long productId) {
+    public void checkCrmEntities(Long customerId, Long productId) {
         log.info("Проверка существования клиента {} и продукта {} в CRM", customerId, productId);
 
         ResponseEntity<Void> customerResponse = crmFeignClient.checkCustomerExists(customerId);
         if (!customerResponse.getStatusCode().is2xxSuccessful()) {
             log.error("Клиент с ID {} не существует в CRM", customerId);
-            throw new RuntimeException("Клиент с ID " + customerId + " не существует в CRM");
+            throw new EntityNotFoundException("Клиент с ID " + customerId + " не существует в CRM");
         }
 
         ResponseEntity<Void> productResponse = crmFeignClient.checkProductExists(productId);
         if (!productResponse.getStatusCode().is2xxSuccessful()) {
             log.error("Продукт с ID {} не существует в CRM", productId);
-            throw new RuntimeException("Продукт с ID " + productId + " не существует в CRM");
+            throw new EntityNotFoundException("Продукт с ID " + productId + " не существует в CRM");
         }
 
         log.info("Клиент {} и продукт {} успешно проверены в CRM", customerId, productId);

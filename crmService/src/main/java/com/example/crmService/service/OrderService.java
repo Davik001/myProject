@@ -11,6 +11,8 @@ import com.example.crmService.orderStatus.OrderStatus;
 import com.example.crmService.repository.CustomerRepository;
 import com.example.crmService.repository.OrderRepository;
 import com.example.crmService.specifications.OrderSpecifications;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.xml.bind.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +36,7 @@ public class OrderService {
     // Создание заказа
     public OrderResponseDTO createOrder(OrderCreateDTO dto) {
         Customer customer = customerRepository.findById(dto.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
 
         Order order = mapper.toEntity(dto);
         order.setOrderStatus(OrderStatus.valueOf(dto.getOrderStatus().toUpperCase()));
@@ -48,26 +50,26 @@ public class OrderService {
     // Удаление заказа
     public void deleteOrder(long id) {
         Order order = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
         repository.delete(order);
     }
 
     // Обновление заказа
     public OrderResponseDTO updateOrder(long id, OrderUpdateDTO dto) {
         Order order = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
         if (dto.getOrderStatus() != null) {
             try {
                 order.setOrderStatus(OrderStatus.valueOf(dto.getOrderStatus().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid order status");
+                throw new IllegalArgumentException("Invalid order status");
             }
         }
 
         if (dto.getCustomerId() != null) {
             Customer customer = customerRepository.findById(dto.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("Customer not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Customer not found"));
             order.setCustomer(customer);
         }
 
@@ -78,7 +80,7 @@ public class OrderService {
     // Получение заказа по ID
     public OrderResponseDTO getOrder(long id) {
         Order order = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
         return mapper.toDTO(order);
     }
 

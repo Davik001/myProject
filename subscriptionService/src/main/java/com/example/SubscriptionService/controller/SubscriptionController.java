@@ -55,7 +55,7 @@ public class SubscriptionController {
         return ResponseEntity.noContent().build();
     }
 
-    // Просмотр всех подписок
+    // Просмотр всех подписок. Не работает
     @GetMapping
     public ResponseEntity<List<SubscriptionDTO>> getAllSubscriptions() {
         logger.info("Запрос на получение всех подписок");
@@ -73,7 +73,7 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscription);
     }
 
-    // Просмотр подписок клиента
+    // Просмотр подписок клиента. Не работает
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<SubscriptionDTO>> getSubscriptionsByCustomer(@PathVariable Long customerId) {
         logger.info("Запрос на получение подписок клиента с ID {}", customerId);

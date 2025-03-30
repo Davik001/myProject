@@ -8,6 +8,7 @@ import com.example.crmService.entity.Employee;
 import com.example.crmService.map.EmployeeMapper;
 import com.example.crmService.repository.EmployeeRepository;
 import com.example.crmService.specifications.EmployeeSpecifications;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +41,7 @@ public class EmployeeService {
     // удалить
     public void deleteEmployee(long id) {
         if(empRepository.findById(id).isEmpty()){
-            throw new RuntimeException("Employee not found");
+            throw new EntityNotFoundException("Employee not found");
         }
         empRepository.deleteById(id);
     }
@@ -48,7 +49,7 @@ public class EmployeeService {
     // обновить
     public EmployeeResponseDTO updateEmployee(long id, EmployeeUpdateDTO employeeUpdateDTO) {
         Employee existingEmployee = empRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
         if (empRepository.findByEmail(employeeUpdateDTO.getEmail()) != null &&
                 !employeeUpdateDTO.getEmail().equals(existingEmployee.getEmail())) {
@@ -80,6 +81,6 @@ public class EmployeeService {
     public EmployeeResponseDTO getEmployeeById(long id) {
         return empRepository.findById(id)
                 .map(empMapper::toResponseDTO)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
     }
 }

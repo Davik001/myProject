@@ -11,6 +11,7 @@ import com.example.crmService.map.ProductMapper;
 import com.example.crmService.repository.ProductRepository;
 import com.example.crmService.specifications.ProductSpecifications;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,19 +21,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final CrmKafkaProducer kafkaProducer;
-
-    @Autowired
-    public ProductService(ProductRepository productRepository,
-                          ProductMapper productMapper,
-                          CrmKafkaProducer kafkaProducer) {
-        this.productRepository = productRepository;
-        this.productMapper = productMapper;
-        this.kafkaProducer = kafkaProducer;
-    }
 
     public ProductResponseDTO createProduct(ProductCreateDTO productCreateDTO) {
         Product product = productMapper.toEntity(productCreateDTO);
