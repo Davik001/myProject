@@ -17,13 +17,11 @@ public interface SubscriptionMapper {
     // DTO -> Сущность (для создания)
     @Mapping(target = "id", ignore = true) // ID генерируется автоматически
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
-   // @Mapping(source = "eventType", target = "type", qualifiedByName = "mapEventType")
     Subscription toEntity(SubscriptionCreateDTO dto);
 
     // DTO -> Сущность (для обновления)
     @Mapping(target = "id", ignore = true) // Не трогаем ID при обновлении
     @Mapping(target = "createdAt", ignore = true) // Не трогаем дату создания
-   // @Mapping(source = "eventType", target = "type", qualifiedByName = "mapEventType")
     Subscription toEntity(SubscriptionUpdateDTO dto);
 
 }

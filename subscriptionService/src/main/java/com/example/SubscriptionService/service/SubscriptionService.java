@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,12 +106,21 @@ public class SubscriptionService {
     // Просмотр всех подписок
     public List<SubscriptionDTO> getAllSubscriptions() {
         log.info("Получение списка всех подписок");
-        List<SubscriptionDTO> subscriptions = subscriptionRepository.findAll()
-                .stream()
-                .map(subscriptionMapper::toDto)
-                .collect(Collectors.toList());
-        log.info("Найдено подписок: {}", subscriptions.size());
-        return subscriptions;
+
+        try {
+            List<Subscription> subscriptions = subscriptionRepository.findAll();
+            log.info("Из БД получено записей: {}", subscriptions.size());
+
+            List<SubscriptionDTO> dtoList = subscriptions.stream()
+                    .map(subscriptionMapper::toDto)
+                    .collect(Collectors.toList());
+
+            log.info("Сконвертировано подписок в DTO: {}", dtoList.size());
+            return dtoList;
+        } catch (Exception e) {
+            log.error("Ошибка при получении подписок", e);
+            throw new IllegalArgumentException("Что-то случилось", e);
+        }
     }
 
     // Просмотр подписки по ID

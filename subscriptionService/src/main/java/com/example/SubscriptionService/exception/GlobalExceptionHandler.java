@@ -65,7 +65,5 @@ public class GlobalExceptionHandler {
         response.put("error", status.getReasonPhrase());
         response.put("message", message);
         return ResponseEntity.status(status).body(response);
-
-
     }
 }
