@@ -133,13 +133,18 @@ public class SubscriptionService {
 
     // Просмотр подписок клиента
     public List<SubscriptionDTO> getSubscriptionsByCustomer(Long customerId) {
-        log.info("Получение подписок для клиента с ID: {}", customerId);
-        List<SubscriptionDTO> subscriptions = subscriptionRepository.findByCustomerId(customerId)
-                .stream()
-                .map(subscriptionMapper::toDto)
-                .collect(Collectors.toList());
-        log.info("Найдено подписок для клиента {}: {}", customerId, subscriptions.size());
-        return subscriptions;
+
+        try {
+            log.info("Получение подписок для клиента с ID: {}", customerId);
+            List<SubscriptionDTO> subscriptions = subscriptionRepository.findByCustomerId(customerId)
+                    .stream()
+                    .map(subscriptionMapper::toDto)
+                    .collect(Collectors.toList());
+            log.info("Найдено подписок для клиента {}: {}", customerId, subscriptions.size());
+            return subscriptions;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Что то случилось", e);
+        }
     }
 
     // Проверка клиента и продукта в CRM
