@@ -1,0 +1,135 @@
+###
+POST http://localhost:7099/employee
+Content-Type: application/json
+
+{
+  "firstName": "Stepan",
+  "lastName": "Adamov",
+  "email": "krutoiefsmail228@gmail.com",
+  "password": "adgkfd23",
+  "role": "Senior"
+}
+
+### GET employee
+GET http://localhost:7099/employee
+
+
+###
+POST http://localhost:7099/customer
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "AD143@gmail.com",
+  "phone": "+794918999994",
+  "orders": [
+    {
+      "orderDate": "2025-01-25T14:30:00",
+      "orderStatus": "NEW"
+    }
+  ]
+}
+
+###
+POST http://localhost:7099/order
+Content-Type: application/json
+
+{
+  "orderDate": "2025-01-25T14:30:00",
+  "orderStatus": "NEW",
+  "customerId": 1
+}
+
+###
+DELETE http://localhost:7099/order/2
+Content-Type: application/json
+
+###
+GET http://localhost:7099/order/2
+Content-Type: application/json
+
+###
+POST http://localhost:7099/customer
+Content-Type: application/json
+
+{
+  "firstName": "Maxutka",
+  "lastName": "DOE",
+  "email": "421maxutka1@gmail.com",
+  "phone": "+81439"
+}
+
+###
+GET http://localhost:7099/customer/2
+Content-Type: application/json
+
+###
+DELETE http://localhost:7099/customer/13
+Content-Type: application/json
+
+###
+POST http://localhost:7099/order
+Content-Type: application/json
+
+{
+  "orderDate": "2025-01-25T14:30:00",
+  "orderStatus": "NEW",
+  "customer": {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "DOE",
+    "email": "42134@gmail.com",
+    "phone": "+81439"
+  }
+}
+
+###
+POST http://localhost:7099/customer
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "DOE",
+  "email": "9922459@gmail.com",
+  "phone": "+814421353451339"
+}
+
+###
+POST http://localhost:7099/order
+Content-Type: application/json
+
+{
+  "orderStatus": "NEW",
+  "customerId": 1
+}
+
+###
+GET http://localhost:7099/customer/1
+Content-Type: application/json
+
+###
+POST http://localhost:7099/products
+Content-Type: application/json
+
+{
+  "name": "coaf5w",
+  "description": "marbled beef",
+  "price": 1030
+}
+
+###
+GET http://localhost:7099/products/1
+Content-Type: application/json
+
+###
+POST http://localhost:7099/users
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "Райан",
+  "email": "Гослинг"
+}
+
+

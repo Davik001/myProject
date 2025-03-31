@@ -1,0 +1,113 @@
+
+### Создаем
+POST http://localhost:7092/subscriptions
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "productId": 1,
+  "eventType": "PRICE_DECREASE"
+}
+
+<> 2025-03-30T141102.201.json
+<> 2025-03-29T235630.201.json
+<> 2025-03-29T235553.201.json
+<> 2025-03-29T235542.201.json
+<> 2025-03-29T235248.201.json
+<> 2025-03-29T235200.201.json
+<> 2025-03-29T235135.201.json
+
+### Создаем если не существует нужных продуктов
+POST http://localhost:7092/subscriptions
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "productId": 919,
+  "eventType": "UPDATE"
+}
+
+<> 2025-03-30T152514.404.json
+<> 2025-03-30T152431.500.json
+<> 2025-03-30T151019.500.json
+<> 2025-03-30T145641.500.json
+<> 2025-03-30T145148.500.json
+<> 2025-03-30T145104.500.json
+<> 2025-03-30T145030.500.json
+<> 2025-03-30T144339.500.json
+<> 2025-03-30T144217.500.json
+<> 2025-03-30T143924.500.json
+<> 2025-03-30T141056.500.json
+<> 2025-03-30T134925.500.txt
+<> 2025-03-29T235603.500.json
+<> 2025-03-29T235208.500.json
+
+### Получаем если существует
+GET http://localhost:7092/subscriptions/37
+
+<> 2025-03-29T235618.200.json
+<> 2025-03-29T235221.200.json
+
+### Получаем если не существует
+GET http://localhost:7092/subscriptions/52
+
+<> 2025-03-30T185647.404.json
+<> 2025-03-30T134913.500.txt
+<> 2025-03-29T235622.500.json
+<> 2025-03-29T235227.500.json
+
+### Создаем заказ
+POST http://localhost:7099/order
+Content-Type: application/json
+
+{
+  "orderDate": "2025-01-25T14:30:00",
+  "orderStatus": "NEW",
+  "customerId": 1
+}
+
+<> 2025-03-29T235626.200.json
+<> 2025-03-29T235243.200.json
+
+
+###
+GET http://localhost:7092/subscriptions
+
+<> 2025-03-30T134906.500.txt
+<> 2025-03-29T235640.500.json
+<> 2025-03-29T235254.500.json
+
+###
+DELETE http://localhost:7092/subscriptions/40
+
+### Получаем если не существует
+GET http://localhost:7092/subscriptions/5324
+
+<> 2025-03-30T152157.404.json
+<> 2025-03-30T151646.500.json
+<> 2025-03-30T151626.500.json
+<> 2025-03-30T134802.500.txt
+<> 2025-03-29T235653.500.json
+<> 2025-03-29T235439.500.json
+
+###
+GET http://localhost:7099/products/919
+
+<> 2025-03-30T152049.404.json
+<> 2025-03-30T150929.404.json
+<> 2025-03-30T150341.500.json
+<> 2025-03-30T150123.500.json
+<> 2025-03-30T150118.200.json
+
+###
+GET http://localhost:7092/subscriptions
+
+<> 2025-03-31T182605.200.json
+<> 2025-03-31T182408.400.json
+<> 2025-03-31T182147.400.json
+<> 2025-03-31T181412.500.json
+
+###
+GET http://localhost:7092/subscriptions/customer/1
+
+<> 2025-03-31T182832.200.json
