@@ -2,6 +2,8 @@ package com.example.SubscriptionService.service;
 
 
 import com.example.SubscriptionService.CrmFeignClient;
+import com.example.SubscriptionService.EventType;
+import com.example.SubscriptionService.dto.alldtos.ProductDTO;
 import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
 import com.example.SubscriptionService.dto.update.SubscriptionUpdateDTO;
@@ -39,8 +41,6 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDTO createSubscription(SubscriptionCreateDTO dto) {
         log.info("Запрос на создание подписки для customerId: {}, productId: {}", dto.getCustomerId(), dto.getProductId());
-
-        try {
             // Проверяем существование клиента и продукта в CRM
             checkCrmEntities(dto.getCustomerId(), dto.getProductId());
 
@@ -52,22 +52,18 @@ public class SubscriptionService {
             log.info("EventType в result: {}", result.getEventType());
 
             // Отправляем задачу в Kafka для микросервиса уведомлений
-            kafkaProducer.sendNotificationTask(
-                    result.getId(),
-                    result.getCustomerId(),
-                    result.getEventType().name(),
-                    "Подписка создана"
-            );
+        ResponseEntity<ProductDTO> productResponse = crmFeignClient.getProductById(dto.getProductId());
+        ProductDTO product = productResponse.getBody();
+
+        kafkaProducer.sendNotificationTask(
+                result.getId(),
+                result.getCustomerId(),
+                result.getEventType().name(),
+                "Подписка создана"
+        );
 
             log.info("Подписка успешно создана с ID: {}", result.getId());
             return result;
-        } catch (CustomEntityNotFoundException e) {
-            log.error("Ошибка при запросе к CRM-сервису: {}", e.getMessage(), e);
-            throw new CustomEntityNotFoundException("Одна из сущностей не найдена", e);
-        }catch (Exception e) {
-            log.error("Ошибка при создании подписки для customerId: {}, productId: {}:", dto.getCustomerId(), dto.getProductId(), e);
-            throw new RuntimeException("Ошибка при создании подписки", e);
-        }
     }
 
 
@@ -154,13 +150,13 @@ public class SubscriptionService {
         ResponseEntity<Void> customerResponse = crmFeignClient.checkCustomerExists(customerId);
         if (!customerResponse.getStatusCode().is2xxSuccessful()) {
             log.error("Клиент с ID {} не существует в CRM", customerId);
-            throw new EntityNotFoundException("Клиент с ID " + customerId + " не существует в CRM");
+            throw new CustomEntityNotFoundException("Клиент с ID " + customerId + " не существует в CRM");
         }
 
         ResponseEntity<Void> productResponse = crmFeignClient.checkProductExists(productId);
         if (!productResponse.getStatusCode().is2xxSuccessful()) {
             log.error("Продукт с ID {} не существует в CRM", productId);
-            throw new EntityNotFoundException("Продукт с ID " + productId + " не существует в CRM");
+            throw new CustomEntityNotFoundException("Продукт с ID " + productId + " не существует в CRM");
         }
 
         log.info("Клиент {} и продукт {} успешно проверены в CRM", customerId, productId);
@@ -182,4 +178,12 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
+    // Получение подписок по productId и eventType
+    public List<SubscriptionDTO> getSubscriptionsByProductIdAndEventType(Long productId, EventType eventType) {
+        log.info("Получение подписок для продукта {} с событием {}", productId, eventType);
+        return subscriptionRepository.findByProductIdAndEventType(productId, eventType)
+                .stream()
+                .map(subscriptionMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

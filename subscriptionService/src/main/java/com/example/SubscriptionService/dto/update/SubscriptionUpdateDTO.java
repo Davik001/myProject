@@ -1,6 +1,6 @@
 package com.example.SubscriptionService.dto.update;
 
-import com.example.SubscriptionService.eventEnum.EventType;
+import com.example.SubscriptionService.EventType;
 import lombok.*;
 
 @Getter

@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
 
     // 404
     @ExceptionHandler(CustomEntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+    public ResponseEntity<Map<String, Object>> handleCustomEntityNotFoundException(CustomEntityNotFoundException ex) {
         return buildError(HttpStatus.NOT_FOUND, "Not Found");
     }
 

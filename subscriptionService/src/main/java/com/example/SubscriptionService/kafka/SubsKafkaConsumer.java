@@ -1,16 +1,11 @@
 package com.example.SubscriptionService.kafka;
 
+import com.example.SubscriptionService.EventType;
 import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
-import com.example.SubscriptionService.eventEnum.EventType;
 import com.example.SubscriptionService.service.SubscriptionService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -34,24 +29,25 @@ public class SubsKafkaConsumer {
             // Парсим сообщение в объект ProductEvent
             ProductEvent productEvent = objectMapper.readValue(message, ProductEvent.class);
             Long productId = productEvent.getProductId();
+            EventType eventType = productEvent.getEventType();
             String productDetails = productEvent.getDetails();
 
-            // Получаем все подписки на продукт
-            List<SubscriptionDTO> subscriptions = subscriptionService.getSubscriptionsByProductId(productId);
+            // Фильтрация подписок по продукту и типу события
+            List<SubscriptionDTO> subscriptions = subscriptionService.getSubscriptionsByProductIdAndEventType(productId, eventType);
 
             if (subscriptions.isEmpty()) {
-                log.info("Нет подписок на продукт с ID {}", productId);
+                log.info("Нет подписок на продукт {} с событием {}", productId, eventType);
                 return;
             }
 
-            // Обрабатываем каждую подписку
             for (SubscriptionDTO subscription : subscriptions) {
-                log.info("Обрабатываем подписку ID {} для клиента {}", subscription.getId(), subscription.getCustomerId());
+                log.info("Отправляем уведомление клиенту {} по подписке {} на событие {}",
+                        subscription.getCustomerId(), subscription.getId(), eventType);
 
                 kafkaProducer.sendNotificationTask(
                         subscription.getId(),
                         subscription.getCustomerId(),
-                        subscription.getEventType().name(),
+                        eventType.name(),
                         productDetails
                 );
             }

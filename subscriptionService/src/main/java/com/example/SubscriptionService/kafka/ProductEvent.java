@@ -1,6 +1,6 @@
 package com.example.SubscriptionService.kafka;
 
-import com.example.SubscriptionService.eventEnum.EventType;
+import com.example.SubscriptionService.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

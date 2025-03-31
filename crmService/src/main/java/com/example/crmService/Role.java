@@ -1,4 +1,4 @@
-package com.example.crmService.entity;
+package com.example.crmService;
 
 import lombok.Getter;
 

@@ -1,5 +1,6 @@
 package com.example.crmService.entity;
 
+import com.example.crmService.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

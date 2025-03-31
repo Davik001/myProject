@@ -1,5 +1,6 @@
 package com.example.SubscriptionService;
 
+import com.example.SubscriptionService.dto.alldtos.ProductDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,4 +15,6 @@ public interface CrmFeignClient {
     @GetMapping("/products/{id}")
     ResponseEntity<Void> checkProductExists(@PathVariable("id") Long productId);
 
+    @GetMapping("/products/{id}")
+    ResponseEntity<ProductDTO> getProductById(@PathVariable Long id);
 }

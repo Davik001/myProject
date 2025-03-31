@@ -1,4 +1,4 @@
-package com.example.SubscriptionService.eventEnum;
+package com.example.SubscriptionService;
 
 import lombok.Getter;
 

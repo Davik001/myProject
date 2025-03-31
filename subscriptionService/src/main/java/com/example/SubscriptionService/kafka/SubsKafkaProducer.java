@@ -1,9 +1,14 @@
 package com.example.SubscriptionService.kafka;
 
+import com.example.SubscriptionService.CrmFeignClient;
+import com.example.SubscriptionService.dto.alldtos.ProductDTO;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -24,11 +29,13 @@ public class SubsKafkaProducer {
     // Отправка сообщения в топик subscription-events
     public void sendNotificationTask(Long subscriptionId, Long customerId, String eventType, String productDetails) {
         try {
-            // Формируем объект сообщения (можно сделать отдельный DTO, если нужно)
-            String message = String.format(
-                    "{\"subscriptionId\": %d, \"customerId\": %d, \"eventType\": \"%s\", \"productDetails\": \"%s\"}",
-                    subscriptionId, customerId, eventType, productDetails
-            );
+//            String message = String.format(
+//                    "{\"subscriptionId\": %d, \"customerId\": %d, \"eventType\": \"%s\", \"productDetails\": \"%s\"}",
+//                    subscriptionId, customerId, eventType, productDetails
+//            );
+
+            String message = String.format("На подписку %d, для пользователя под номером %d пришло уведомление о продуктке.\n" +
+                    "    %s, %s", subscriptionId, customerId, eventType, productDetails);
 
             kafkaTemplate.send(subscriptionEventsTopic, message);
             log.info("Отправлено сообщение в топик {}: {}", subscriptionEventsTopic, message);
@@ -38,4 +45,3 @@ public class SubsKafkaProducer {
         }
     }
 }
-
