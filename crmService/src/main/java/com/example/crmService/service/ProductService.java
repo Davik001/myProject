@@ -6,19 +6,21 @@ import com.example.crmService.dto.create.ProductCreateDTO;
 import com.example.crmService.dto.update.ProductUpdateDTO;
 import com.example.crmService.entity.Product;
 import com.example.crmService.kafka.CrmKafkaProducer;
-import com.example.crmService.kafka.ProductEvent;
+import com.example.shared.EventType;
+import com.example.shared.ProductEvent;
 import com.example.crmService.map.ProductMapper;
 import com.example.crmService.repository.ProductRepository;
 import com.example.crmService.specifications.ProductSpecifications;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +33,10 @@ public class ProductService {
         Product product = productMapper.toEntity(productCreateDTO);
         Product savedProduct = productRepository.save(product);
 
-        // Отправляем событие в Kafka
-        ProductEvent productEvent = new ProductEvent(savedProduct.getId(), "Продукт создан");
-        kafkaProducer.sendProductEvent(productEvent);
+        Map<String, String> details = new HashMap<>();
+        details.put("message", "Продукт создан");
 
+        kafkaProducer.sendProductEvent(savedProduct.getId(), EventType.CREATED, details);
         return productMapper.toResponseDto(savedProduct);
     }
 
@@ -42,15 +44,18 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
+        Map<String, String> details = new HashMap<>();
+        if (!product.getPrice().equals(updatedProductDTO.getPrice())) {
+            details.put("Старая цена", product.getPrice().toString());
+            details.put("Новая цена", updatedProductDTO.getPrice().toString());
+        }
+
         product.setName(updatedProductDTO.getName());
         product.setDescription(updatedProductDTO.getDescription());
         product.setPrice(updatedProductDTO.getPrice());
         Product updatedProduct = productRepository.save(product);
 
-        // Отправляем событие в Kafka
-        ProductEvent productEvent = new ProductEvent(updatedProduct.getId(), "Цена продукта изменена на " + updatedProduct.getPrice());
-        kafkaProducer.sendProductEvent(productEvent);
-
+        kafkaProducer.sendProductEvent(updatedProduct.getId(), EventType.UPDATE, details);
         return productMapper.toResponseDto(updatedProduct);
     }
 
@@ -60,9 +65,10 @@ public class ProductService {
         }
         productRepository.deleteById(id);
 
-        // Отправляем событие в Kafka
-        ProductEvent productEvent = new ProductEvent(id, "Продукт удалён");
-        kafkaProducer.sendProductEvent(productEvent);
+        Map<String, String> details = new HashMap<>();
+        details.put("message", "Продукт удалён");
+
+        kafkaProducer.sendProductEvent(id, EventType.DELETE, details);
     }
 
     public ProductResponseDTO getProductById(Long id) {

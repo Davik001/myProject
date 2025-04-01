@@ -49,6 +49,13 @@
 			<version>6.2.0</version>
 		</dependency>
 
+		<!-- Используем нашу библиотеку -->
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>shared</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- добавление postgre -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
