@@ -1,10 +1,8 @@
 package com.example.SubscriptionService.repository;
 
-import com.example.SubscriptionService.EventType;
+import com.example.shared.EventType;
 import com.example.SubscriptionService.entity.Subscription;
-import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 

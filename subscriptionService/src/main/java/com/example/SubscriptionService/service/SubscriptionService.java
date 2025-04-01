@@ -2,7 +2,7 @@ package com.example.SubscriptionService.service;
 
 
 import com.example.SubscriptionService.CrmFeignClient;
-import com.example.SubscriptionService.EventType;
+import com.example.shared.EventType;
 import com.example.SubscriptionService.dto.alldtos.ProductDTO;
 import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.dto.create.SubscriptionCreateDTO;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -51,15 +52,19 @@ public class SubscriptionService {
 
             log.info("EventType в result: {}", result.getEventType());
 
-            // Отправляем задачу в Kafka для микросервиса уведомлений
-        ResponseEntity<ProductDTO> productResponse = crmFeignClient.getProductById(dto.getProductId());
-        ProductDTO product = productResponse.getBody();
+            // формируем детали
+       // Map<String, String> productDetails = Map.of("productId", dto.getProductId().toString());
 
+        ResponseEntity<ProductDTO> response = crmFeignClient.getProductById(dto.getProductId());
+        ProductDTO product = response.getBody();
+        Map<String, String> productDetails = Map.of("Название", product.getName());
+
+        // Отправляем
         kafkaProducer.sendNotificationTask(
                 result.getId(),
                 result.getCustomerId(),
-                result.getEventType().name(),
-                "Подписка создана"
+                result.getEventType(),
+                productDetails
         );
 
             log.info("Подписка успешно создана с ID: {}", result.getId());

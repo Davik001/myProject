@@ -1,6 +1,6 @@
 package com.example.SubscriptionService.dto.alldtos;
 
-import com.example.SubscriptionService.EventType;
+import com.example.shared.EventType;
 import lombok.*;
 
 import java.time.LocalDateTime;

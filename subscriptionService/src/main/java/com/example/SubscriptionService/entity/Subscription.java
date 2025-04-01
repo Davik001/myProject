@@ -1,6 +1,6 @@
 package com.example.SubscriptionService.entity;
 
-import com.example.SubscriptionService.EventType;
+import com.example.shared.EventType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

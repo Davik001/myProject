@@ -2,8 +2,10 @@ package com.example.SubscriptionService.kafka;
 
 import com.example.SubscriptionService.CrmFeignClient;
 import com.example.SubscriptionService.dto.alldtos.ProductDTO;
+import com.example.shared.EventType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,30 +14,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-@Component
-public class SubsKafkaProducer {
+import java.util.Map;
 
-    private static final Logger log = LoggerFactory.getLogger(SubsKafkaProducer.class);
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class SubsKafkaProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${spring.kafka.topics.subscription-events}")
     private String subscriptionEventsTopic;
 
-    public SubsKafkaProducer(KafkaTemplate<String, Object> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
-
-    // Отправка сообщения в топик subscription-events
-    public void sendNotificationTask(Long subscriptionId, Long customerId, String eventType, String productDetails) {
+    public void sendNotificationTask(Long subscriptionId, Long customerId, EventType eventType, Map<String, String> productDetails) {
         try {
-//            String message = String.format(
-//                    "{\"subscriptionId\": %d, \"customerId\": %d, \"eventType\": \"%s\", \"productDetails\": \"%s\"}",
-//                    subscriptionId, customerId, eventType, productDetails
-//            );
-
-            String message = String.format("На подписку %d, для пользователя под номером %d пришло уведомление о продуктке.\n" +
-                    "    %s, %s", subscriptionId, customerId, eventType, productDetails);
+            String message = String.format(
+                    "Уведомление для подписки #%d (Клиент #%d): %s. Детали: %s",
+                    subscriptionId, customerId, eventType.getDetails(), productDetails
+            );
 
             kafkaTemplate.send(subscriptionEventsTopic, message);
             log.info("Отправлено сообщение в топик {}: {}", subscriptionEventsTopic, message);

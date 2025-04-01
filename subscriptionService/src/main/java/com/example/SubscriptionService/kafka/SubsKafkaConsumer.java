@@ -1,8 +1,9 @@
 package com.example.SubscriptionService.kafka;
 
-import com.example.SubscriptionService.EventType;
 import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.service.SubscriptionService;
+import com.example.shared.EventType;
+import com.example.shared.ProductEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,13 +11,13 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class SubsKafkaConsumer {
-
     private final SubscriptionService subscriptionService;
     private final SubsKafkaProducer kafkaProducer;
     private final ObjectMapper objectMapper;
@@ -30,7 +31,7 @@ public class SubsKafkaConsumer {
             ProductEvent productEvent = objectMapper.readValue(message, ProductEvent.class);
             Long productId = productEvent.getProductId();
             EventType eventType = productEvent.getEventType();
-            String productDetails = productEvent.getDetails();
+            Map<String, String> productDetails = productEvent.getDetails();
 
             // Фильтрация подписок по продукту и типу события
             List<SubscriptionDTO> subscriptions = subscriptionService.getSubscriptionsByProductIdAndEventType(productId, eventType);
@@ -47,7 +48,7 @@ public class SubsKafkaConsumer {
                 kafkaProducer.sendNotificationTask(
                         subscription.getId(),
                         subscription.getCustomerId(),
-                        eventType.name(),
+                        eventType,
                         productDetails
                 );
             }
