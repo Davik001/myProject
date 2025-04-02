@@ -57,14 +57,16 @@ public class SubscriptionService {
 
         ResponseEntity<ProductDTO> response = crmFeignClient.getProductById(dto.getProductId());
         ProductDTO product = response.getBody();
-        Map<String, String> productDetails = Map.of("Название", product.getName());
+        Map<String, String> productDetails = Map.of("Продукт ", product.getName());
 
         // Отправляем
         kafkaProducer.sendNotificationTask(
                 result.getId(),
                 result.getCustomerId(),
                 result.getEventType(),
-                productDetails
+                product.getName(),
+                productDetails,
+                product.getPrice()
         );
 
             log.info("Подписка успешно создана с ID: {}", result.getId());

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Component
@@ -26,12 +27,26 @@ public class SubsKafkaProducer {
     @Value("${spring.kafka.topics.subscription-events}")
     private String subscriptionEventsTopic;
 
-    public void sendNotificationTask(Long subscriptionId, Long customerId, EventType eventType, Map<String, String> productDetails) {
+    public void sendNotificationTask(Long subscriptionId, Long customerId, EventType eventType, String productName, Map<String, String> productDetails, BigDecimal newPrice) {
         try {
-            String message = String.format(
-                    "Уведомление для подписки #%d (Клиент #%d): %s. Детали: %s",
-                    subscriptionId, customerId, eventType.getDetails(), productDetails
-            );
+            String message = "";
+            switch (eventType) {
+                case UPDATE:
+                    message = String.format(
+                            "Уведомление для подписки #%d (Клиент #%d): %s. Продукт: %s. Цена изменилась: %s",
+                            subscriptionId, customerId, eventType.getDetails(), productName, productDetails
+                    );
+                    break;
+                case DELETE:
+                    message = String.format("Уведомление для вашей подписки #%d. Товар '%s' удален из каталога", subscriptionId, productName);
+                    break;
+                case PRICE_INCREASE:
+                    message = String.format("Уведомление для подписки #%d. Цена на '%s' поднялась до %s", subscriptionId, productName, newPrice);
+                    break;
+                case PRICE_DECREASE:
+                    message = String.format("Уведомление для подписки #%d. Цена на '%s' понизилась до %s", subscriptionId, productName, newPrice);
+                    break;
+            }
 
             kafkaTemplate.send(subscriptionEventsTopic, message);
             log.info("Отправлено сообщение в топик {}: {}", subscriptionEventsTopic, message);

@@ -1,5 +1,7 @@
 package com.example.SubscriptionService.kafka;
 
+import com.example.SubscriptionService.CrmFeignClient;
+import com.example.SubscriptionService.dto.alldtos.ProductDTO;
 import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.service.SubscriptionService;
 import com.example.shared.EventType;
@@ -7,9 +9,11 @@ import com.example.shared.ProductEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +25,7 @@ public class SubsKafkaConsumer {
     private final SubscriptionService subscriptionService;
     private final SubsKafkaProducer kafkaProducer;
     private final ObjectMapper objectMapper;
+    private final CrmFeignClient crmFeignClient;
 
     @KafkaListener(topics = "${spring.kafka.topics.product-events}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenProductEvents(String message) {
@@ -41,6 +46,9 @@ public class SubsKafkaConsumer {
                 return;
             }
 
+            ResponseEntity<ProductDTO> productResponse = crmFeignClient.getProductById(productId);
+            String productName = (productResponse.getBody() != null) ? productResponse.getBody().getName() : "Неизвестный продукт";
+
             for (SubscriptionDTO subscription : subscriptions) {
                 log.info("Отправляем уведомление клиенту {} по подписке {} на событие {}",
                         subscription.getCustomerId(), subscription.getId(), eventType);
@@ -49,7 +57,9 @@ public class SubsKafkaConsumer {
                         subscription.getId(),
                         subscription.getCustomerId(),
                         eventType,
-                        productDetails
+                        productName,
+                        productDetails,
+                        new BigDecimal(productDetails.get("Новая цена"))
                 );
             }
 
