@@ -52,12 +52,14 @@ public class SubscriptionService {
 
             log.info("EventType в result: {}", result.getEventType());
 
-            // формируем детали
-       // Map<String, String> productDetails = Map.of("productId", dto.getProductId().toString());
-
         ResponseEntity<ProductDTO> response = crmFeignClient.getProductById(dto.getProductId());
         ProductDTO product = response.getBody();
         Map<String, String> productDetails = Map.of("Продукт ", product.getName());
+
+        ResponseEntity<String> emailResponse = crmFeignClient.getCustomerEmail(dto.getCustomerId());
+        String email = (emailResponse.getStatusCode().is2xxSuccessful() && emailResponse.getBody() != null)
+                ? emailResponse.getBody()
+                : "email@unknown.com";
 
         // Отправляем
         kafkaProducer.sendNotificationTask(
@@ -66,7 +68,8 @@ public class SubscriptionService {
                 result.getEventType(),
                 product.getName(),
                 productDetails,
-                product.getPrice()
+                product.getPrice(),
+                email
         );
 
             log.info("Подписка успешно создана с ID: {}", result.getId());

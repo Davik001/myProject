@@ -17,4 +17,7 @@ public interface CrmFeignClient {
 
     @GetMapping("/products/{id}")
     ResponseEntity<ProductDTO> getProductById(@PathVariable Long id);
+
+    @GetMapping("/customer/{id}/email")
+    ResponseEntity<String> getCustomerEmail(@PathVariable("id") Long customerId);
 }

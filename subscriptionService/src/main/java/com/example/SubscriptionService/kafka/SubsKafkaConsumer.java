@@ -6,6 +6,7 @@ import com.example.SubscriptionService.dto.alldtos.SubscriptionDTO;
 import com.example.SubscriptionService.service.SubscriptionService;
 import com.example.shared.EventType;
 import com.example.shared.ProductEvent;
+import com.example.shared.SubscriptionEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,13 +54,19 @@ public class SubsKafkaConsumer {
                 log.info("Отправляем уведомление клиенту {} по подписке {} на событие {}",
                         subscription.getCustomerId(), subscription.getId(), eventType);
 
+                ResponseEntity<String> emailResponse = crmFeignClient.getCustomerEmail(subscription.getCustomerId());
+                String email = (emailResponse.getStatusCode().is2xxSuccessful() && emailResponse.getBody() != null)
+                        ? emailResponse.getBody()
+                        : "email@unknown.com";
+
                 kafkaProducer.sendNotificationTask(
                         subscription.getId(),
                         subscription.getCustomerId(),
                         eventType,
                         productName,
                         productDetails,
-                        new BigDecimal(productDetails.get("Новая цена"))
+                        new BigDecimal(productDetails.get("Новая цена")),
+                        email
                 );
             }
 
