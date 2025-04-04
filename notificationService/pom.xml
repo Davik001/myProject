@@ -59,6 +59,13 @@
 			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Используем нашу библиотеку -->
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>shared</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!-- OpenFeign -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
