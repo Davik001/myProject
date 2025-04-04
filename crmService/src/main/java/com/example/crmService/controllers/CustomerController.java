@@ -4,6 +4,7 @@ package com.example.crmService.controllers;
 import com.example.crmService.dto.common.CustomerResponseDTO;
 import com.example.crmService.dto.create.CustomerCreateDTO;
 import com.example.crmService.dto.update.CustomerUpdateDTO;
+import com.example.crmService.entity.Customer;
 import com.example.crmService.exception.customException.ResourceNotFoundException;
 import com.example.crmService.projection.DataCustomer;
 import com.example.crmService.service.CustomerService;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -89,6 +91,12 @@ public class CustomerController {
                 firstName, lastName, email, phone, orderStatus, page, size);
         DataCustomer filter = new DataCustomer(firstName, lastName, email, phone, orderStatus);
         return customerService.getAllCustomers(filter, page, size);
+    }
+
+    // для получения имейла
+    @GetMapping("/{id}/email")
+    public ResponseEntity<String> getCustomersEmail(@PathVariable Long id) {
+        return customerService.getCustomerEmail(id);
     }
 }
 
